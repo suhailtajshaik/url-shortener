@@ -1,0 +1,29 @@
+{
+  "name": "static-node-server",
+  "version": "1.0.0",
+  "description": "static node server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "docker:build": "docker build -t static-node-server .",
+    "docker:run": "docker run --name static-node-server -d -p 3000:3000 static-node-server"
+  },
+  "keywords": [
+    "node",
+    "JS",
+    "static",
+    "web",
+    "server"
+  ],
+  "author": "Suhail Taj Shaik",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
