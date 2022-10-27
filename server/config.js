@@ -8,9 +8,7 @@ const config = () => {
     port: process.env.NODE_PORT || "3000",
     env: process.env.NODE_ENV || "develop",
     mock: process.env.MOCK_FLAG || "false",
-    mongoURI:
-      process.env.MONGO_URI ||
-      "mongodb+srv://url-shortener:shortUrl4me@url-shortener-db.d9rxpvs.mongodb.net/shortener",
+    mongoURI: process.env.MONGO_URI,
     baseUrl:
       process.env.NODE_PROTOCOL +
       "://" +
