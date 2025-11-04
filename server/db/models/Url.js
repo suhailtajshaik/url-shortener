@@ -9,6 +9,15 @@ const clickSchema = new mongoose.Schema(
     userAgent: String,
     referer: String,
     ip: String,
+    location: {
+      latitude: Number,
+      longitude: Number,
+      accuracy: Number,
+      permissionGranted: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   { _id: false }
 );

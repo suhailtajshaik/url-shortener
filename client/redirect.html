@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+    }
+
+    .message {
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .destination {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 25px;
+      word-break: break-all;
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .info-box {
+      background: #e8f4f8;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin-bottom: 25px;
+      text-align: left;
+      border-radius: 5px;
+    }
+
+    .info-box h3 {
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .info-box ul {
+      margin-left: 20px;
+      color: #666;
+      font-size: 13px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .status.info {
+      background: #e8f4f8;
+      color: #0c5460;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .privacy-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999;
+      line-height: 1.5;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔗</div>
+    <h1>Redirecting to destination</h1>
+    <div class="message">
+      You're about to be redirected to:
+    </div>
+    <div class="destination" id="destination">Loading...</div>
+
+    <div class="info-box">
+      <h3>📍 Optional: Share your location</h3>
+      <p>We collect anonymous location data to provide analytics. This helps understand:</p>
+      <ul>
+        <li>Geographic reach of shared links</li>
+        <li>Regional engagement patterns</li>
+      </ul>
+      <p style="margin-top: 8px;"><strong>Your privacy:</strong> Location sharing is optional and can be denied.</p>
+    </div>
+
+    <button class="btn btn-primary" id="allowBtn">
+      <span id="allowBtnText">📍 Allow Location & Redirect</span>
+    </button>
+
+    <button class="btn btn-secondary" id="skipBtn">
+      Skip & Redirect Now
+    </button>
+
+    <div id="status" class="status hide"></div>
+
+    <div class="privacy-note">
+      🔒 Your privacy is important. Location data is stored anonymously and never shared with third parties.
+    </div>
+  </div>
+
+  <script>
+    // Get URL code from current path
+    const urlCode = window.location.pathname.split('/').pop();
+    let destinationUrl = '';
+    let locationData = null;
+
+    // Fetch URL details
+    async function fetchUrlDetails() {
+      try {
+        const response = await fetch(`/api/url/info/${urlCode}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          destinationUrl = data.data.longUrl;
+          document.getElementById('destination').textContent = destinationUrl;
+        } else {
+          showStatus('URL not found. Redirecting to homepage...', 'error');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+        }
+      } catch (err) {
+        console.error('Error fetching URL:', err);
+        showStatus('Error loading destination', 'error');
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+      statusEl.classList.remove('hide');
+    }
+
+    // Request location permission
+    async function requestLocation() {
+      const allowBtn = document.getElementById('allowBtn');
+      const allowBtnText = document.getElementById('allowBtnText');
+
+      allowBtn.disabled = true;
+      allowBtnText.innerHTML = '<span class="spinner"></span>Getting location...';
+
+      if (!navigator.geolocation) {
+        showStatus('Geolocation is not supported by your browser', 'error');
+        setTimeout(() => redirectWithData(null), 2000);
+        return;
+      }
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            permissionGranted: true
+          };
+          showStatus('✓ Location obtained. Redirecting...', 'success');
+          setTimeout(() => redirectWithData(locationData), 1000);
+        },
+        (error) => {
+          let errorMessage = 'Unable to retrieve location. ';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += 'Permission denied.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += 'Location unavailable.';
+              break;
+            case error.TIMEOUT:
+              errorMessage += 'Request timed out.';
+              break;
+            default:
+              errorMessage += 'Unknown error.';
+          }
+          showStatus(errorMessage + ' Redirecting without location...', 'info');
+          setTimeout(() => redirectWithData(null), 2000);
+        }
+      );
+    }
+
+    // Redirect with tracking data
+    async function redirectWithData(location) {
+      try {
+        const trackingData = {
+          urlCode: urlCode,
+          location: location
+        };
+
+        // Send tracking data (don't wait for response)
+        fetch('/api/url/track-redirect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(trackingData),
+          keepalive: true
+        }).catch(err => console.error('Tracking failed:', err));
+
+        // Redirect immediately
+        window.location.href = destinationUrl;
+      } catch (err) {
+        console.error('Error during redirect:', err);
+        // Still redirect even if tracking fails
+        window.location.href = destinationUrl;
+      }
+    }
+
+    // Event listeners
+    document.getElementById('allowBtn').addEventListener('click', requestLocation);
+    document.getElementById('skipBtn').addEventListener('click', () => {
+      showStatus('Redirecting...', 'info');
+      setTimeout(() => redirectWithData(null), 500);
+    });
+
+    // Initialize
+    fetchUrlDetails();
+  </script>
+</body>
+</html>

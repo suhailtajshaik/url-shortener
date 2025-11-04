@@ -2,13 +2,14 @@
 
 const express = require("express");
 const router = express.Router();
+const path = require("path");
 const { param, validationResult } = require("express-validator");
 const logger = require("../../utils/logger");
 let config = require("../../config.js");
 const Url = require("../../db/models/Url");
 
 // @route     GET /:code
-// @desc      Redirect to long/original URL with validation and error handling
+// @desc      Show intermediate page with location permission request
 router.get(
   "/:urlCode",
   [
@@ -35,7 +36,7 @@ router.get(
     try {
       const { urlCode } = req.params;
 
-      // Find URL in database
+      // Verify URL exists
       const url = await Url.findOne({ urlCode });
 
       if (!url) {
@@ -45,42 +46,12 @@ router.get(
         });
       }
 
-      // Validate the long URL before redirecting
-      if (!url.longUrl || url.longUrl.trim() === "") {
-        logger.error(`Invalid longUrl for urlCode: ${urlCode}`);
-        return res.status(500).json({
-          success: false,
-          message: "Invalid URL data",
-        });
-      }
-
-      // Record click analytics
-      const clickData = {
-        timestamp: new Date(),
-        userAgent: req.get("user-agent") || "Unknown",
-        referer: req.get("referer") || "Direct",
-        ip: req.ip || req.connection.remoteAddress,
-      };
-
-      // Record click asynchronously (don't wait for it to complete)
-      url.recordClick(clickData).catch((err) => {
-        logger.error("Failed to record click:", err);
-      });
-
-      logger.info(`Redirect: ${urlCode} -> ${url.longUrl}`);
-
-      // Redirect to the original URL
-      return res.redirect(301, url.longUrl);
+      // Serve the redirect page with location permission request
+      return res.sendFile(
+        path.resolve(__dirname, "..", "..", "..", "client", "redirect.html")
+      );
     } catch (err) {
-      logger.error("Error in redirect endpoint:", err);
-
-      // Handle specific mongoose errors
-      if (err.name === "CastError") {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid URL code format",
-        });
-      }
+      logger.error("Error serving redirect page:", err);
 
       res.status(500).json({
         success: false,
