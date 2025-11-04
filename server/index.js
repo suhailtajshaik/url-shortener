@@ -2,10 +2,36 @@
 
 const express = require("express");
 const path = require("path");
+const helmet = require("helmet");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const config = require("./config.js");
 const connectDB = require("./db");
 
 const app = express();
+
+// Security middleware
+app.use(helmet());
+app.use(cors());
+
+// Rate limiting middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to all routes
+app.use(limiter);
+
+// Stricter rate limiting for URL shortening endpoint
+const shortenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 URL creations per 15 minutes
+  message: "Too many URLs created from this IP, please try again later.",
+});
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -15,6 +41,10 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 app.use(express.static(path.join("..", "client")));
+
+// Export shortenLimiter for use in routes
+app.set("shortenLimiter", shortenLimiter);
+
 require("./routes")(app);
 
 const server = app.listen(config.port, function () {
