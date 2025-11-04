@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:7-jammy
+    container_name: url-shortener-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: urlshortener
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - url-shortener-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # URL Shortener application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-shortener-app
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NODE_PROTOCOL: http
+      NODE_HOSTNAME: localhost
+      NODE_PORT: 3000
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/urlshortener?authSource=admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/usr/src/app/logs
+    networks:
+      - url-shortener-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/version', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  url-shortener-network:
+    driver: bridge

@@ -2,9 +2,10 @@
 
 const express = require("express");
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
+const { body, param, validationResult } = require("express-validator");
 const validUrl = require("valid-url");
 const shortid = require("shortid");
+const logger = require("../../utils/logger");
 let config = require("../../config.js");
 const Url = require("../../db/models/Url");
 
@@ -81,13 +82,15 @@ router.post(
 
       await url.save();
 
+      logger.info(`URL shortened: ${longUrl} -> ${shortUrl}`);
+
       res.status(201).json({
         success: true,
         data: url,
         message: "URL shortened successfully",
       });
     } catch (err) {
-      console.error("Error in /shorten:", err);
+      logger.error("Error in /shorten:", err);
 
       // Handle specific mongoose errors
       if (err.name === "ValidationError") {
@@ -105,6 +108,61 @@ router.post(
         });
       }
 
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
+// @route     GET /api/url/stats/:urlCode
+// @desc      Get analytics for a shortened URL
+router.get(
+  "/stats/:urlCode",
+  [
+    param("urlCode")
+      .trim()
+      .notEmpty()
+      .withMessage("URL code is required")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage("Invalid URL code format"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array().map((err) => err.msg),
+      });
+    }
+
+    try {
+      const { urlCode } = req.params;
+      const url = await Url.findOne({ urlCode });
+
+      if (!url) {
+        return res.status(404).json({
+          success: false,
+          message: "Short URL not found",
+        });
+      }
+
+      // Return analytics data
+      res.json({
+        success: true,
+        data: {
+          urlCode: url.urlCode,
+          longUrl: url.longUrl,
+          shortUrl: url.shortUrl,
+          createdAt: url.date,
+          totalClicks: url.clicks,
+          lastClickedAt: url.lastClickedAt,
+          recentClicks: url.clickDetails.slice(-10), // Last 10 clicks
+        },
+      });
+    } catch (err) {
+      logger.error("Error fetching URL stats:", err);
       res.status(500).json({
         success: false,
         message: "Internal server error",

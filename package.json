@@ -1,35 +1,37 @@
 {
-  "name": "static-node-server",
+  "name": "url-shortener",
   "version": "1.0.0",
-  "description": "static node server",
-  "main": "index.js",
+  "description": "A URL shortening service with analytics",
+  "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "docker:build": "docker build -t static-node-server .",
-    "docker:run": "docker run --name static-node-server -d -p 3000:3000 static-node-server"
+    "docker:build": "docker build -t url-shortener .",
+    "docker:run": "docker run --name url-shortener -d -p 3000:3000 url-shortener"
   },
   "keywords": [
+    "url-shortener",
     "node",
-    "JS",
-    "static",
-    "web",
-    "server"
+    "express",
+    "mongodb",
+    "analytics"
   ],
   "author": "Suhail Taj Shaik",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "mongoose": "^6.7.0",
+    "mongoose": "^8.8.4",
+    "morgan": "^1.10.0",
     "shortid": "^2.2.16",
-    "valid-url": "^1.0.9"
+    "valid-url": "^1.0.9",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "nodemon": "^3.1.9"
   }
 }

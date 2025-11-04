@@ -1,17 +1,28 @@
 const mongoose = require("mongoose");
 const config = require("../config");
-const db = config.mongoURI;
+const logger = require("../utils/logger");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(db, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    await mongoose.connect(config.mongoURI);
+
+    logger.info("MongoDB Connected successfully");
+    logger.info(`Database: ${mongoose.connection.name}`);
+
+    // Handle connection events
+    mongoose.connection.on("error", (err) => {
+      logger.error("MongoDB connection error:", err);
     });
 
-    console.log("MongoDB Connected...");
+    mongoose.connection.on("disconnected", () => {
+      logger.warn("MongoDB disconnected");
+    });
+
+    mongoose.connection.on("reconnected", () => {
+      logger.info("MongoDB reconnected");
+    });
   } catch (err) {
-    console.error(err.message);
+    logger.error("Failed to connect to MongoDB:", err.message);
     process.exit(1);
   }
 };
