@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 20px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    .message {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #999;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h1>Redirecting...</h1>
+    <p class="message">Please wait while we redirect you to your destination.</p>
+    <p class="note">
+      🔒 Your browser may ask for location permission to help us provide geographic analytics.
+      This is optional and anonymous.
+    </p>
+  </div>
+
+  <script>
+    // Get URL code from current path
+    const urlCode = window.location.pathname.split('/').pop();
+    let destinationUrl = '';
+    let hasRedirected = false;
+
+    // Fetch URL details and start redirect process
+    async function init() {
+      try {
+        // Fetch the destination URL
+        const response = await fetch(`/api/url/info/${urlCode}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          console.error('URL not found');
+          window.location.href = '/';
+          return;
+        }
+
+        destinationUrl = data.data.longUrl;
+
+        // Try to get location with a short timeout
+        requestLocationAndRedirect();
+
+      } catch (err) {
+        console.error('Error fetching URL:', err);
+        window.location.href = '/';
+      }
+    }
+
+    // Request location and redirect
+    function requestLocationAndRedirect() {
+      // Set a timeout to redirect anyway after 3 seconds
+      const redirectTimeout = setTimeout(() => {
+        if (!hasRedirected) {
+          console.log('Location request timed out, redirecting without location');
+          redirectWithData(null);
+        }
+      }, 3000);
+
+      // Check if geolocation is supported
+      if (!navigator.geolocation) {
+        clearTimeout(redirectTimeout);
+        redirectWithData(null);
+        return;
+      }
+
+      // Request location - browser will show native permission dialog
+      const options = {
+        enableHighAccuracy: false, // Faster response
+        timeout: 2500,
+        maximumAge: 60000 // Accept cached location up to 1 minute old
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        // Success callback
+        (position) => {
+          clearTimeout(redirectTimeout);
+          const locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            permissionGranted: true
+          };
+          redirectWithData(locationData);
+        },
+        // Error callback
+        (error) => {
+          clearTimeout(redirectTimeout);
+          console.log('Location error:', error.message);
+          redirectWithData(null);
+        },
+        options
+      );
+    }
+
+    // Redirect with tracking data
+    function redirectWithData(location) {
+      if (hasRedirected) return;
+      hasRedirected = true;
+
+      try {
+        const trackingData = {
+          urlCode: urlCode,
+          location: location
+        };
+
+        // Send tracking data asynchronously (don't wait for response)
+        fetch('/api/url/track-redirect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(trackingData),
+          keepalive: true // Ensure request completes even after page unload
+        }).catch(err => console.error('Tracking failed:', err));
+
+      } catch (err) {
+        console.error('Error during tracking:', err);
+      }
+
+      // Redirect to destination
+      window.location.href = destinationUrl;
+    }
+
+    // Start the process
+    init();
+  </script>
+</body>
+</html>

@@ -4,15 +4,24 @@ const express = require("express");
 const path = require("path");
 const helmet = require("helmet");
 const cors = require("cors");
+const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const config = require("./config.js");
 const connectDB = require("./db");
+const logger = require("./utils/logger");
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors());
+
+// HTTP request logging
+app.use(
+  morgan(config.env === "production" ? "combined" : "dev", {
+    stream: logger.stream,
+  })
+);
 
 // Rate limiting middleware
 const limiter = rateLimit({
@@ -48,28 +57,17 @@ app.set("shortenLimiter", shortenLimiter);
 require("./routes")(app);
 
 const server = app.listen(config.port, function () {
-  var port = server.address().port;
-  console.log(
-    "\nExpress server listening on port " +
-      port +
-      ", in " +
-      config.env +
-      " mode"
-  );
-  console.log("open http://localhost:" + port);
+  const port = server.address().port;
+  logger.info(`Express server listening on port ${port}, in ${config.env} mode`);
+  logger.info(`Open http://localhost:${port}`);
 });
 
 server.on("error", function (e) {
   if (e.code === "EADDRINUSE") {
-    console.log("ADDRESS IN USE");
-    console.log(
-      "\nExpress server listening on port " +
-        e.port +
-        ", in " +
-        config.env +
-        " mode"
-    );
+    logger.error(`Port ${config.port} is already in use`);
+    process.exit(1);
   } else {
+    logger.error("Server error:", e);
     process.exit(1);
   }
 });
