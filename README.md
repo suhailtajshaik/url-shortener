@@ -159,20 +159,24 @@ See `.env.example` for all available options.
 
 **Endpoint**: `GET /:urlCode`
 
-**Behavior**: Shows an intermediate page requesting location permission, then redirects
+**Behavior**: Automatically requests location using browser's native permission dialog, then redirects
 
 **How it works**:
 1. User visits the short URL
-2. An intermediate page is displayed with location permission request
-3. User can choose to:
-   - Allow location and redirect
-   - Skip and redirect immediately
-4. Click is tracked with or without location data
-5. User is redirected to the original URL
+2. A minimal loading page is displayed
+3. Browser automatically shows its native location permission dialog (if supported)
+4. User can:
+   - **Allow**: Location is captured and tracked
+   - **Deny/Block**: Redirect happens immediately without location
+5. Automatic redirect after 3 seconds maximum (even if permission dialog is still shown)
+6. Click is tracked with or without location data
+7. User is redirected to the original URL
 
-**Privacy**: Location sharing is completely optional and requires explicit user consent
+**Privacy**: Uses native browser permission - no custom UI or dark patterns
 
-**Example**: Visiting `http://localhost:3000/abc123` shows the permission page before redirecting
+**Example**: Visiting `http://localhost:3000/abc123` triggers native browser location permission
+
+**Compatibility**: Works on all modern browsers (Chrome, Firefox, Safari, Edge) on both desktop and mobile devices
 
 ---
 
@@ -195,25 +199,38 @@ See `.env.example` for all available options.
 
 ### How Location Tracking Works
 
-When users visit a shortened URL, they see an intermediate page with two options:
+When users visit a shortened URL, the system automatically requests location using the browser's native permission system:
 
-1. **Allow Location & Redirect**: Requests browser geolocation permission
-   - Uses HTML5 Geolocation API
-   - Captures latitude, longitude, and accuracy
-   - Requires explicit user consent
+**Automatic Process**:
+1. User clicks on shortened URL
+2. Minimal loading page is displayed (< 1 second)
+3. Browser shows its native location permission dialog automatically
+4. User responds to native browser prompt:
+   - **Allow**: Location is captured (latitude, longitude, accuracy)
+   - **Deny**: Redirect proceeds immediately without location
+   - **Ignore**: Auto-redirect after 3 seconds without location
+5. Analytics tracked regardless of permission choice
+6. User redirected to destination
 
-2. **Skip & Redirect Now**: Bypasses location tracking
-   - Redirects immediately
-   - Still tracks other analytics (timestamp, user agent, referrer)
+**Technical Details**:
+- Uses HTML5 Geolocation API
+- Native browser permission dialog (not custom UI)
+- No user interaction required - fully automatic
+- 3-second maximum wait time
+- Falls back gracefully if location unavailable
+- Works on both mobile and desktop devices
 
 ### Privacy Guarantees
 
-- **Opt-In Only**: Location is never tracked without permission
-- **Transparent**: Clear explanation of why location is requested
+- **Opt-In Only**: Location is never tracked without explicit browser permission
+- **Native Permissions**: Uses browser's built-in permission system (trusted by users)
+- **Transparent**: Browser shows standard permission dialog with clear messaging
 - **Anonymous**: Location data is stored with analytics, not linked to personal identity
 - **Limited Storage**: Only last 100 clicks per URL are stored
-- **User Control**: Users can always deny permission
+- **User Control**: Users can deny, allow, or block permanently via browser settings
+- **No Dark Patterns**: No custom UI to manipulate user choice
 - **No Third-Party Sharing**: Location data never leaves your database
+- **Instant Redirect**: Even if permission denied, user experience is not degraded
 
 ### Location Data Structure
 
