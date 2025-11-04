@@ -2,19 +2,24 @@
 require("dotenv").config();
 
 const config = () => {
+  // Validate required environment variables
+  if (!process.env.MONGO_URI) {
+    console.error("ERROR: MONGO_URI environment variable is required");
+    process.exit(1);
+  }
+
+  const protocol = process.env.NODE_PROTOCOL || "http";
+  const hostname = process.env.NODE_HOSTNAME || "localhost";
+  const port = process.env.NODE_PORT || "3000";
+
   return {
-    protocol: process.env.NODE_PROTOCOL || "http",
-    hostname: process.env.NODE_HOSTNAME || "localhost",
-    port: process.env.NODE_PORT || "3000",
+    protocol,
+    hostname,
+    port,
     env: process.env.NODE_ENV || "develop",
     mock: process.env.MOCK_FLAG || "false",
     mongoURI: process.env.MONGO_URI,
-    baseUrl:
-      process.env.NODE_PROTOCOL +
-      "://" +
-      process.env.NODE_HOSTNAME +
-      ":" +
-      process.env.NODE_PORT,
+    baseUrl: `${protocol}://${hostname}:${port}`,
   };
 };
 
