@@ -56,7 +56,9 @@
       font-weight: 500;
     }
 
-    input[type="url"] {
+    input[type="url"],
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 15px;
       border: 2px solid #e0e0e0;
@@ -65,10 +67,179 @@
       transition: all 0.3s;
     }
 
-    input[type="url"]:focus {
+    input[type="url"]:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .optional-fields {
+      margin-top: 15px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .optional-fields h4 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .help-text {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .qr-code-section {
+      margin-top: 15px;
+      text-align: center;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .qr-code-section img {
+      max-width: 250px;
+      margin: 15px auto;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+    }
+
+    .qr-btn {
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+
+    .qr-btn:hover {
+      background: #218838;
+    }
+
+    .tab-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab:hover {
+      color: #667eea;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .url-info-card {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .info-row:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #444;
+    }
+
+    .info-value {
+      color: #666;
+      word-break: break-all;
+    }
+
+    .expiration-warning {
+      background: #fff3cd;
+      border-left-color: #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      color: #856404;
+    }
+
+    .expiration-expired {
+      background: #f8d7da;
+      border-left-color: #dc3545;
+      color: #721c24;
+    }
+
+    .expiration-good {
+      background: #d4edda;
+      border-left-color: #28a745;
+      color: #155724;
+    }
+
+    .countdown {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #667eea;
+      text-align: center;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
     }
 
     .btn {
@@ -214,7 +385,15 @@
     <h1>🔗 URL Shortener</h1>
     <p class="subtitle">Transform long URLs into short, shareable links</p>
 
-    <form id="shortenForm">
+    <!-- Tabs -->
+    <div class="tab-container">
+      <button class="tab active" onclick="switchTab('create')">Create URL</button>
+      <button class="tab" onclick="switchTab('edit')">Edit URL</button>
+    </div>
+
+    <!-- Create URL Tab -->
+    <div id="createTab" class="tab-content active">
+      <form id="shortenForm">
       <div class="form-group">
         <label for="longUrl">Enter your long URL</label>
         <input
@@ -225,6 +404,38 @@
           required
         >
       </div>
+
+      <div class="optional-fields">
+        <h4>⚙️ Optional Settings</h4>
+
+        <div class="form-group">
+          <label for="customCode">Custom Short Code (optional)</label>
+          <input
+            type="text"
+            id="customCode"
+            name="customCode"
+            placeholder="my-custom-link"
+            pattern="[a-zA-Z0-9_-]{3,30}"
+            minlength="3"
+            maxlength="30"
+          >
+          <p class="help-text">3-30 characters: letters, numbers, hyphens, and underscores only</p>
+        </div>
+
+        <div class="form-group">
+          <label for="expiresIn">Expire After (hours, optional)</label>
+          <input
+            type="number"
+            id="expiresIn"
+            name="expiresIn"
+            placeholder="24"
+            min="1"
+            max="8760"
+          >
+          <p class="help-text">Link expires after specified hours (max 8760 = 1 year)</p>
+        </div>
+      </div>
+
       <button type="submit" class="btn" id="submitBtn">Shorten URL</button>
     </form>
 
@@ -244,6 +455,104 @@
       <p style="margin-top: 15px; color: #666; font-size: 14px;">
         Original URL: <span id="originalUrl" style="word-break: break-all;"></span>
       </p>
+      <div class="qr-code-section" id="qrSection" style="display: none;">
+        <h4>📱 QR Code</h4>
+        <img id="qrCodeImage" src="" alt="QR Code">
+        <br>
+        <button class="qr-btn" onclick="downloadQR()">Download QR Code</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- Edit URL Tab -->
+    <div id="editTab" class="tab-content">
+      <form id="lookupForm">
+        <div class="form-group">
+          <label for="lookupCode">Enter Short URL Code to Edit</label>
+          <input
+            type="text"
+            id="lookupCode"
+            name="lookupCode"
+            placeholder="my-custom-link"
+            pattern="[a-zA-Z0-9_-]+"
+            required
+          >
+          <p class="help-text">Enter the short code (not the full URL)</p>
+        </div>
+        <button type="submit" class="btn" id="lookupBtn">Lookup URL</button>
+      </form>
+
+      <div class="loading" id="lookupLoading" style="display: none;">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px;">Loading URL details...</p>
+      </div>
+
+      <div class="error" id="lookupError"></div>
+
+      <!-- URL Details and Edit Form -->
+      <div id="urlDetailsSection" style="display: none;">
+        <div class="url-info-card">
+          <h3>📊 URL Details</h3>
+          <div class="info-row">
+            <span class="info-label">Short Code:</span>
+            <span class="info-value" id="detailUrlCode"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Short URL:</span>
+            <span class="info-value" id="detailShortUrl"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Destination:</span>
+            <span class="info-value" id="detailLongUrl"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Created:</span>
+            <span class="info-value" id="detailCreatedAt"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Total Clicks:</span>
+            <span class="info-value" id="detailClicks"></span>
+          </div>
+        </div>
+
+        <!-- Expiration Info -->
+        <div id="expirationDisplay"></div>
+
+        <!-- Edit Form -->
+        <form id="editForm" style="margin-top: 30px;">
+          <h3 style="margin-bottom: 20px; color: #333;">✏️ Edit URL Destination</h3>
+
+          <div class="form-group">
+            <label for="editLongUrl">Destination URL</label>
+            <input
+              type="url"
+              id="editLongUrl"
+              name="editLongUrl"
+              placeholder="https://example.com"
+              required
+            >
+            <p class="help-text">You can only change the destination URL. The short code cannot be modified.</p>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="resetExpiration" name="resetExpiration" checked>
+              Reset expiration timer (extends by 30 days from now)
+            </label>
+          </div>
+
+          <button type="submit" class="btn" id="editSubmitBtn">Save Changes</button>
+          <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="deleteUrl()">Delete URL</button>
+        </form>
+
+        <div class="loading" id="editLoading" style="display: none;">
+          <div class="spinner"></div>
+          <p style="margin-top: 10px;">Updating URL...</p>
+        </div>
+
+        <div class="error" id="editError"></div>
+      </div>
     </div>
   </div>
 
@@ -256,17 +565,28 @@
     const shortUrlDisplay = document.getElementById('shortUrl');
     const originalUrlDisplay = document.getElementById('originalUrl');
     const copyBtn = document.getElementById('copyBtn');
+    const qrSection = document.getElementById('qrSection');
+    const qrCodeImage = document.getElementById('qrCodeImage');
+
+    let currentUrlCode = null;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const longUrl = document.getElementById('longUrl').value.trim();
+      const customCode = document.getElementById('customCode').value.trim();
+      const expiresIn = document.getElementById('expiresIn').value;
 
       // Hide previous results/errors
       result.classList.remove('show');
       error.classList.remove('show');
+      qrSection.style.display = 'none';
       loading.classList.add('show');
       submitBtn.disabled = true;
+
+      const payload = { longUrl };
+      if (customCode) payload.customCode = customCode;
+      if (expiresIn) payload.expiresIn = parseInt(expiresIn);
 
       try {
         const response = await fetch('/api/url/shorten', {
@@ -274,7 +594,7 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ longUrl }),
+          body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -283,9 +603,13 @@
           // Display the shortened URL
           shortUrlDisplay.textContent = data.data.shortUrl;
           originalUrlDisplay.textContent = data.data.longUrl;
+          currentUrlCode = data.data.urlCode;
           result.classList.add('show');
           copyBtn.textContent = 'Copy';
           copyBtn.classList.remove('copied');
+
+          // Load QR code
+          loadQRCode(currentUrlCode);
         } else {
           // Display error message
           const errorMessage = data.errors
@@ -304,6 +628,20 @@
       }
     });
 
+    async function loadQRCode(urlCode) {
+      try {
+        const response = await fetch(`/api/url/qrcode/${urlCode}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          qrCodeImage.src = data.data.qrCode;
+          qrSection.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Failed to load QR code:', err);
+      }
+    }
+
     function copyToClipboard() {
       const shortUrl = shortUrlDisplay.textContent;
       navigator.clipboard.writeText(shortUrl).then(() => {
@@ -317,6 +655,259 @@
         console.error('Failed to copy:', err);
         alert('Failed to copy URL to clipboard');
       });
+    }
+
+    function downloadQR() {
+      const link = document.createElement('a');
+      link.href = qrCodeImage.src;
+      link.download = `qr-code-${currentUrlCode}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      if (tabName === 'create') {
+        tabs[0].classList.add('active');
+        document.getElementById('createTab').classList.add('active');
+      } else if (tabName === 'edit') {
+        tabs[1].classList.add('active');
+        document.getElementById('editTab').classList.add('active');
+      }
+    }
+
+    // URL Lookup functionality
+    const lookupForm = document.getElementById('lookupForm');
+    const lookupBtn = document.getElementById('lookupBtn');
+    const lookupLoading = document.getElementById('lookupLoading');
+    const lookupError = document.getElementById('lookupError');
+    const urlDetailsSection = document.getElementById('urlDetailsSection');
+    const expirationDisplay = document.getElementById('expirationDisplay');
+
+    let countdownInterval = null;
+    let currentEditUrlCode = null;
+
+    lookupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const lookupCode = document.getElementById('lookupCode').value.trim();
+
+      // Hide previous results/errors
+      urlDetailsSection.style.display = 'none';
+      lookupError.classList.remove('show');
+      lookupLoading.style.display = 'block';
+      lookupBtn.disabled = true;
+
+      try {
+        const response = await fetch(`/api/url/details/${lookupCode}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // Display URL details
+          displayUrlDetails(data.data);
+          urlDetailsSection.style.display = 'block';
+        } else {
+          lookupError.textContent = '❌ ' + (data.message || 'URL not found');
+          lookupError.classList.add('show');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        lookupError.textContent = '❌ Network error. Please check your connection and try again.';
+        lookupError.classList.add('show');
+      } finally {
+        lookupLoading.style.display = 'none';
+        lookupBtn.disabled = false;
+      }
+    });
+
+    function displayUrlDetails(urlData) {
+      currentEditUrlCode = urlData.urlCode;
+
+      // Display basic info
+      document.getElementById('detailUrlCode').textContent = urlData.urlCode;
+      document.getElementById('detailShortUrl').textContent = urlData.shortUrl;
+      document.getElementById('detailLongUrl').textContent = urlData.longUrl;
+      document.getElementById('detailCreatedAt').textContent = new Date(urlData.createdAt).toLocaleString();
+      document.getElementById('detailClicks').textContent = urlData.totalClicks;
+
+      // Pre-fill edit form
+      document.getElementById('editLongUrl').value = urlData.longUrl;
+
+      // Display expiration info
+      displayExpirationInfo(urlData.expirationInfo);
+    }
+
+    function displayExpirationInfo(expirationInfo) {
+      // Clear previous countdown
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+
+      if (!expirationInfo) {
+        expirationDisplay.innerHTML = `
+          <div class="url-info-card expiration-good" style="margin-top: 20px;">
+            <h4>⏳ Expiration Status</h4>
+            <p><strong>This URL never expires</strong></p>
+          </div>
+        `;
+        return;
+      }
+
+      if (expirationInfo.isExpired) {
+        expirationDisplay.innerHTML = `
+          <div class="url-info-card expiration-expired" style="margin-top: 20px;">
+            <h4>⚠️ Expired URL</h4>
+            <p><strong>This URL expired on ${new Date(expirationInfo.expiresAt).toLocaleString()}</strong></p>
+            <p>This URL cannot be edited. You may need to create a new one.</p>
+          </div>
+        `;
+        document.getElementById('editForm').style.display = 'none';
+        return;
+      }
+
+      // Display countdown
+      const expiresAt = new Date(expirationInfo.expiresAt);
+      const cssClass = expirationInfo.remainingDays < 7 ? 'expiration-warning' : 'expiration-good';
+
+      expirationDisplay.innerHTML = `
+        <div class="url-info-card ${cssClass}" style="margin-top: 20px;">
+          <h4>⏳ Expiration Status</h4>
+          <p><strong>Expires on:</strong> ${expiresAt.toLocaleString()}</p>
+          <div class="countdown" id="countdownTimer"></div>
+        </div>
+      `;
+
+      // Start countdown timer
+      updateCountdown(expiresAt);
+      countdownInterval = setInterval(() => updateCountdown(expiresAt), 1000);
+    }
+
+    function updateCountdown(expiresAt) {
+      const now = new Date();
+      const remainingMs = expiresAt - now;
+
+      if (remainingMs <= 0) {
+        document.getElementById('countdownTimer').textContent = 'EXPIRED';
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+      document.getElementById('countdownTimer').textContent =
+        `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    // Edit form submission
+    const editForm = document.getElementById('editForm');
+    const editSubmitBtn = document.getElementById('editSubmitBtn');
+    const editLoading = document.getElementById('editLoading');
+    const editError = document.getElementById('editError');
+
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const editLongUrl = document.getElementById('editLongUrl').value.trim();
+      const resetExpiration = document.getElementById('resetExpiration').checked;
+
+      // Hide previous errors
+      editError.classList.remove('show');
+      editLoading.style.display = 'block';
+      editSubmitBtn.disabled = true;
+
+      const payload = {
+        longUrl: editLongUrl,
+        resetExpiration: resetExpiration
+      };
+
+      try {
+        const response = await fetch(`/api/url/edit/${currentEditUrlCode}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert('✅ URL updated successfully!');
+          // Refresh the URL details
+          displayUrlDetails(data.data);
+        } else {
+          const errorMessage = data.errors
+            ? data.errors.join(', ')
+            : data.message || 'Failed to update URL';
+          editError.textContent = '❌ ' + errorMessage;
+          editError.classList.add('show');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        editError.textContent = '❌ Network error. Please check your connection and try again.';
+        editError.classList.add('show');
+      } finally {
+        editLoading.style.display = 'none';
+        editSubmitBtn.disabled = false;
+      }
+    });
+
+    // Delete URL functionality
+    async function deleteUrl() {
+      if (!currentEditUrlCode) {
+        alert('❌ No URL selected');
+        return;
+      }
+
+      const confirmed = confirm(
+        `Are you sure you want to delete the short URL "${currentEditUrlCode}"?\n\n` +
+        `This action cannot be undone. The short URL will no longer work and all analytics data will be lost.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        editLoading.style.display = 'block';
+
+        const response = await fetch(`/api/url/${currentEditUrlCode}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert('✅ URL deleted successfully!');
+          // Clear the form and hide details
+          cancelEdit();
+        } else {
+          alert('❌ ' + (data.message || 'Failed to delete URL'));
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('❌ Network error. Failed to delete URL.');
+      } finally {
+        editLoading.style.display = 'none';
+      }
+    }
+
+    function cancelEdit() {
+      urlDetailsSection.style.display = 'none';
+      document.getElementById('lookupCode').value = '';
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
     }
   </script>
 </body>

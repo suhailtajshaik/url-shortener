@@ -12,6 +12,10 @@ const config = () => {
   const hostname = process.env.NODE_HOSTNAME || "localhost";
   const port = process.env.NODE_PORT || "3000";
 
+  // Default URL expiration in hours (30 days = 720 hours)
+  const defaultExpirationHours =
+    parseInt(process.env.DEFAULT_URL_EXPIRATION_HOURS) || 720;
+
   return {
     protocol,
     hostname,
@@ -20,6 +24,7 @@ const config = () => {
     mock: process.env.MOCK_FLAG || "false",
     mongoURI: process.env.MONGO_URI,
     baseUrl: `${protocol}://${hostname}:${port}`,
+    defaultExpirationHours,
   };
 };
 

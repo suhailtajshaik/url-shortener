@@ -1,17 +1,15 @@
 "use strict";
 
-let path = require("path");
+const path = require("path");
 
-let config = require("./config.js");
-let routting = (app) => {
+const config = require("./config.js");
+const routting = (app) => {
   app.use("/api/url", require("./apis/url/index"));
   app.use("/", require("./apis/home/index"));
 
   app.route("/version").get((req, res) => {
-    let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-    let pkg = require("../package.json");
-    let os = require("os");
-    let data = {
+    const pkg = require("../package.json");
+    const data = {
       name: pkg.name,
       version: pkg.version,
       port: config.port,
