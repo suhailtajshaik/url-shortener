@@ -402,6 +402,60 @@ router.put(
   }
 );
 
+// @route     DELETE /api/url/:urlCode
+// @desc      Delete a shortened URL
+router.delete(
+  "/:urlCode",
+  [
+    param("urlCode")
+      .trim()
+      .notEmpty()
+      .withMessage("URL code is required")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage("Invalid URL code format"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array().map((err) => err.msg),
+      });
+    }
+
+    try {
+      const { urlCode } = req.params;
+
+      // Find and delete the URL
+      const url = await Url.findOneAndDelete({ urlCode });
+
+      if (!url) {
+        return res.status(404).json({
+          success: false,
+          message: "Short URL not found",
+        });
+      }
+
+      logger.info(`URL deleted: ${urlCode} (${url.longUrl})`);
+
+      res.json({
+        success: true,
+        message: "URL deleted successfully",
+        data: {
+          urlCode: url.urlCode,
+          longUrl: url.longUrl,
+        },
+      });
+    } catch (err) {
+      logger.error("Error deleting URL:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
 // @route     GET /api/url/info/:urlCode
 // @desc      Get URL info without recording a click (for redirect page)
 router.get(

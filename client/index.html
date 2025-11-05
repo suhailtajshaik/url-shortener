@@ -233,6 +233,15 @@
       background: #5a6268;
     }
 
+    .btn-danger {
+      background: #dc3545;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
     .btn {
       width: 100%;
       padding: 15px;
@@ -534,6 +543,7 @@
 
           <button type="submit" class="btn" id="editSubmitBtn">Save Changes</button>
           <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="deleteUrl()">Delete URL</button>
         </form>
 
         <div class="loading" id="editLoading" style="display: none;">
@@ -851,6 +861,46 @@
         editSubmitBtn.disabled = false;
       }
     });
+
+    // Delete URL functionality
+    async function deleteUrl() {
+      if (!currentEditUrlCode) {
+        alert('❌ No URL selected');
+        return;
+      }
+
+      const confirmed = confirm(
+        `Are you sure you want to delete the short URL "${currentEditUrlCode}"?\n\n` +
+        `This action cannot be undone. The short URL will no longer work and all analytics data will be lost.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        editLoading.style.display = 'block';
+
+        const response = await fetch(`/api/url/${currentEditUrlCode}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert('✅ URL deleted successfully!');
+          // Clear the form and hide details
+          cancelEdit();
+        } else {
+          alert('❌ ' + (data.message || 'Failed to delete URL'));
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('❌ Network error. Failed to delete URL.');
+      } finally {
+        editLoading.style.display = 'none';
+      }
+    }
 
     function cancelEdit() {
       urlDetailsSection.style.display = 'none';
