@@ -303,7 +303,7 @@ router.get(
 );
 
 // @route     PUT /api/url/edit/:urlCode
-// @desc      Edit an existing shortened URL (alias and/or destination)
+// @desc      Edit destination URL of an existing shortened URL (alias cannot be changed)
 router.put(
   "/edit/:urlCode",
   [
@@ -314,8 +314,9 @@ router.put(
       .matches(/^[a-zA-Z0-9_-]+$/)
       .withMessage("Invalid URL code format"),
     body("longUrl")
-      .optional()
       .trim()
+      .notEmpty()
+      .withMessage("Destination URL is required")
       .isURL({
         protocols: ["http", "https"],
         require_protocol: true,
@@ -323,15 +324,6 @@ router.put(
       .withMessage("Please provide a valid URL with http or https protocol")
       .isLength({ max: 2048 })
       .withMessage("URL is too long (maximum 2048 characters)"),
-    body("newUrlCode")
-      .optional()
-      .trim()
-      .isLength({ min: 3, max: 30 })
-      .withMessage("Custom code must be between 3 and 30 characters")
-      .matches(/^[a-zA-Z0-9_-]+$/)
-      .withMessage(
-        "Custom code can only contain letters, numbers, hyphens, and underscores"
-      ),
     body("resetExpiration")
       .optional()
       .isBoolean()
@@ -348,7 +340,7 @@ router.put(
 
     try {
       const { urlCode } = req.params;
-      const { longUrl, newUrlCode, resetExpiration } = req.body;
+      const { longUrl, resetExpiration } = req.body;
 
       // Find the existing URL
       const url = await Url.findOne({ urlCode });
@@ -368,36 +360,16 @@ router.put(
         });
       }
 
-      // Validate new URL if provided
-      if (longUrl && !validUrl.isUri(longUrl)) {
+      // Validate new URL
+      if (!validUrl.isUri(longUrl)) {
         return res.status(400).json({
           success: false,
           message: "Invalid URL format",
         });
       }
 
-      // If changing URL code, check if new code is available
-      if (newUrlCode && newUrlCode !== urlCode) {
-        const existingUrl = await Url.findOne({ urlCode: newUrlCode });
-        if (existingUrl) {
-          return res.status(409).json({
-            success: false,
-            message:
-              "New URL code is already taken. Please choose another one.",
-          });
-        }
-      }
-
-      // Update fields
-      if (longUrl) {
-        url.longUrl = longUrl;
-      }
-
-      if (newUrlCode && newUrlCode !== urlCode) {
-        url.urlCode = newUrlCode;
-        url.shortUrl = `${config.baseUrl}/${newUrlCode}`;
-        url.isCustom = true;
-      }
+      // Update destination URL
+      url.longUrl = longUrl;
 
       // Reset expiration timer if requested or if default expiration should apply
       if (resetExpiration === true || resetExpiration === undefined) {
@@ -411,7 +383,7 @@ router.put(
       await url.save();
 
       logger.info(
-        `URL edited: ${urlCode} -> ${url.urlCode} (longUrl: ${url.longUrl}, expires: ${url.expiresAt ? url.expiresAt.toISOString() : "never"})`
+        `URL edited: ${urlCode} (longUrl: ${url.longUrl}, expires: ${url.expiresAt ? url.expiresAt.toISOString() : "never"})`
       );
 
       res.json({
@@ -422,13 +394,60 @@ router.put(
     } catch (err) {
       logger.error("Error editing URL:", err);
 
-      if (err.code === 11000) {
-        return res.status(409).json({
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
+// @route     DELETE /api/url/:urlCode
+// @desc      Delete a shortened URL
+router.delete(
+  "/:urlCode",
+  [
+    param("urlCode")
+      .trim()
+      .notEmpty()
+      .withMessage("URL code is required")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage("Invalid URL code format"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array().map((err) => err.msg),
+      });
+    }
+
+    try {
+      const { urlCode } = req.params;
+
+      // Find and delete the URL
+      const url = await Url.findOneAndDelete({ urlCode });
+
+      if (!url) {
+        return res.status(404).json({
           success: false,
-          message: "URL code already exists, please try again",
+          message: "Short URL not found",
         });
       }
 
+      logger.info(`URL deleted: ${urlCode} (${url.longUrl})`);
+
+      res.json({
+        success: true,
+        message: "URL deleted successfully",
+        data: {
+          urlCode: url.urlCode,
+          longUrl: url.longUrl,
+        },
+      });
+    } catch (err) {
+      logger.error("Error deleting URL:", err);
       res.status(500).json({
         success: false,
         message: "Internal server error",

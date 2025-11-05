@@ -233,6 +233,24 @@
       background: #5a6268;
     }
 
+    .btn-danger {
+      background: #dc3545;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .button-group .btn {
+      flex: 1;
+    }
+
     .btn {
       width: 100%;
       padding: 15px;
@@ -511,7 +529,7 @@
 
         <!-- Edit Form -->
         <form id="editForm" style="margin-top: 30px;">
-          <h3 style="margin-bottom: 20px; color: #333;">✏️ Edit URL</h3>
+          <h3 style="margin-bottom: 20px; color: #333;">✏️ Edit URL Destination</h3>
 
           <div class="form-group">
             <label for="editLongUrl">Destination URL</label>
@@ -522,21 +540,7 @@
               placeholder="https://example.com"
               required
             >
-          </div>
-
-          <div class="form-group">
-            <label for="editUrlCode">Short Code (alias)</label>
-            <input
-              type="text"
-              id="editUrlCode"
-              name="editUrlCode"
-              placeholder="my-custom-link"
-              pattern="[a-zA-Z0-9_-]{3,30}"
-              minlength="3"
-              maxlength="30"
-              required
-            >
-            <p class="help-text">3-30 characters: letters, numbers, hyphens, and underscores only</p>
+            <p class="help-text">You can only change the destination URL. To change the short code, delete this URL and create a new one.</p>
           </div>
 
           <div class="form-group">
@@ -547,7 +551,10 @@
           </div>
 
           <button type="submit" class="btn" id="editSubmitBtn">Save Changes</button>
-          <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+          <div class="button-group" style="margin-top: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="deleteUrl()">Delete URL</button>
+          </div>
         </form>
 
         <div class="loading" id="editLoading" style="display: none;">
@@ -743,7 +750,6 @@
 
       // Pre-fill edit form
       document.getElementById('editLongUrl').value = urlData.longUrl;
-      document.getElementById('editUrlCode').value = urlData.urlCode;
 
       // Display expiration info
       displayExpirationInfo(urlData.expirationInfo);
@@ -823,7 +829,6 @@
       e.preventDefault();
 
       const editLongUrl = document.getElementById('editLongUrl').value.trim();
-      const editUrlCode = document.getElementById('editUrlCode').value.trim();
       const resetExpiration = document.getElementById('resetExpiration').checked;
 
       // Hide previous errors
@@ -833,7 +838,6 @@
 
       const payload = {
         longUrl: editLongUrl,
-        newUrlCode: editUrlCode,
         resetExpiration: resetExpiration
       };
 
@@ -851,7 +855,6 @@
         if (response.ok && data.success) {
           alert('✅ URL updated successfully!');
           // Refresh the URL details
-          currentEditUrlCode = data.data.urlCode;
           displayUrlDetails(data.data);
         } else {
           const errorMessage = data.errors
@@ -869,6 +872,46 @@
         editSubmitBtn.disabled = false;
       }
     });
+
+    // Delete URL functionality
+    async function deleteUrl() {
+      if (!currentEditUrlCode) {
+        alert('❌ No URL selected');
+        return;
+      }
+
+      const confirmed = confirm(
+        `Are you sure you want to delete the short URL "${currentEditUrlCode}"?\n\n` +
+        `This action cannot be undone. The short URL will no longer work and all analytics data will be lost.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        editLoading.style.display = 'block';
+
+        const response = await fetch(`/api/url/${currentEditUrlCode}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert('✅ URL deleted successfully!');
+          // Clear the form and hide details
+          cancelEdit();
+        } else {
+          alert('❌ ' + (data.message || 'Failed to delete URL'));
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('❌ Network error. Failed to delete URL.');
+      } finally {
+        editLoading.style.display = 'none';
+      }
+    }
 
     function cancelEdit() {
       urlDetailsSection.style.display = 'none';
