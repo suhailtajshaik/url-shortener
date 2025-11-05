@@ -56,7 +56,9 @@
       font-weight: 500;
     }
 
-    input[type="url"] {
+    input[type="url"],
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 15px;
       border: 2px solid #e0e0e0;
@@ -65,10 +67,63 @@
       transition: all 0.3s;
     }
 
-    input[type="url"]:focus {
+    input[type="url"]:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .optional-fields {
+      margin-top: 15px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .optional-fields h4 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .help-text {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .qr-code-section {
+      margin-top: 15px;
+      text-align: center;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .qr-code-section img {
+      max-width: 250px;
+      margin: 15px auto;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+    }
+
+    .qr-btn {
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+
+    .qr-btn:hover {
+      background: #218838;
     }
 
     .btn {
@@ -225,6 +280,38 @@
           required
         >
       </div>
+
+      <div class="optional-fields">
+        <h4>⚙️ Optional Settings</h4>
+
+        <div class="form-group">
+          <label for="customCode">Custom Short Code (optional)</label>
+          <input
+            type="text"
+            id="customCode"
+            name="customCode"
+            placeholder="my-custom-link"
+            pattern="[a-zA-Z0-9_-]{3,30}"
+            minlength="3"
+            maxlength="30"
+          >
+          <p class="help-text">3-30 characters: letters, numbers, hyphens, and underscores only</p>
+        </div>
+
+        <div class="form-group">
+          <label for="expiresIn">Expire After (hours, optional)</label>
+          <input
+            type="number"
+            id="expiresIn"
+            name="expiresIn"
+            placeholder="24"
+            min="1"
+            max="8760"
+          >
+          <p class="help-text">Link expires after specified hours (max 8760 = 1 year)</p>
+        </div>
+      </div>
+
       <button type="submit" class="btn" id="submitBtn">Shorten URL</button>
     </form>
 
@@ -244,6 +331,12 @@
       <p style="margin-top: 15px; color: #666; font-size: 14px;">
         Original URL: <span id="originalUrl" style="word-break: break-all;"></span>
       </p>
+      <div class="qr-code-section" id="qrSection" style="display: none;">
+        <h4>📱 QR Code</h4>
+        <img id="qrCodeImage" src="" alt="QR Code">
+        <br>
+        <button class="qr-btn" onclick="downloadQR()">Download QR Code</button>
+      </div>
     </div>
   </div>
 
@@ -256,17 +349,28 @@
     const shortUrlDisplay = document.getElementById('shortUrl');
     const originalUrlDisplay = document.getElementById('originalUrl');
     const copyBtn = document.getElementById('copyBtn');
+    const qrSection = document.getElementById('qrSection');
+    const qrCodeImage = document.getElementById('qrCodeImage');
+
+    let currentUrlCode = null;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const longUrl = document.getElementById('longUrl').value.trim();
+      const customCode = document.getElementById('customCode').value.trim();
+      const expiresIn = document.getElementById('expiresIn').value;
 
       // Hide previous results/errors
       result.classList.remove('show');
       error.classList.remove('show');
+      qrSection.style.display = 'none';
       loading.classList.add('show');
       submitBtn.disabled = true;
+
+      const payload = { longUrl };
+      if (customCode) payload.customCode = customCode;
+      if (expiresIn) payload.expiresIn = parseInt(expiresIn);
 
       try {
         const response = await fetch('/api/url/shorten', {
@@ -274,7 +378,7 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ longUrl }),
+          body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -283,9 +387,13 @@
           // Display the shortened URL
           shortUrlDisplay.textContent = data.data.shortUrl;
           originalUrlDisplay.textContent = data.data.longUrl;
+          currentUrlCode = data.data.urlCode;
           result.classList.add('show');
           copyBtn.textContent = 'Copy';
           copyBtn.classList.remove('copied');
+
+          // Load QR code
+          loadQRCode(currentUrlCode);
         } else {
           // Display error message
           const errorMessage = data.errors
@@ -304,6 +412,20 @@
       }
     });
 
+    async function loadQRCode(urlCode) {
+      try {
+        const response = await fetch(`/api/url/qrcode/${urlCode}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          qrCodeImage.src = data.data.qrCode;
+          qrSection.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Failed to load QR code:', err);
+      }
+    }
+
     function copyToClipboard() {
       const shortUrl = shortUrlDisplay.textContent;
       navigator.clipboard.writeText(shortUrl).then(() => {
@@ -317,6 +439,15 @@
         console.error('Failed to copy:', err);
         alert('Failed to copy URL to clipboard');
       });
+    }
+
+    function downloadQR() {
+      const link = document.createElement('a');
+      link.href = qrCodeImage.src;
+      link.download = `qr-code-${currentUrlCode}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>

@@ -7,7 +7,11 @@
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "docker:build": "docker build -t url-shortener .",
-    "docker:run": "docker run --name url-shortener -d -p 3000:3000 url-shortener"
+    "docker:run": "docker run --name url-shortener -d -p 3000:3000 url-shortener",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\""
   },
   "keywords": [
     "url-shortener",
@@ -27,11 +31,16 @@
     "helmet": "^7.1.0",
     "mongoose": "^8.8.4",
     "morgan": "^1.10.0",
+    "qrcode": "^1.5.4",
     "shortid": "^2.2.16",
     "valid-url": "^1.0.9",
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2"
   }
 }

@@ -48,6 +48,14 @@ const urlSchema = new mongoose.Schema({
     type: Date,
   },
   clickDetails: [clickSchema],
+  isCustom: {
+    type: Boolean,
+    default: false,
+  },
+  expiresAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 // Add indexes for better query performance

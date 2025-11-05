@@ -5,7 +5,6 @@ const router = express.Router();
 const path = require("path");
 const { param, validationResult } = require("express-validator");
 const logger = require("../../utils/logger");
-let config = require("../../config.js");
 const Url = require("../../db/models/Url");
 
 // @route     GET /:code
