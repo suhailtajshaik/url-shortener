@@ -2,10 +2,31 @@
 require("dotenv").config();
 
 const config = () => {
-  // Validate required environment variables
-  if (!process.env.MONGO_URI) {
-    console.error("ERROR: MONGO_URI environment variable is required");
-    process.exit(1);
+  // MongoDB configuration - support both direct URI and username/password
+  let mongoURI;
+
+  if (process.env.MONGO_URI) {
+    // Use direct connection string if provided
+    mongoURI = process.env.MONGO_URI;
+  } else {
+    // Build MongoDB Atlas connection string from username and password
+    const mongoUsername = process.env.MONGO_USERNAME;
+    const mongoPassword = process.env.MONGO_PASSWORD;
+    const mongoCluster = process.env.MONGO_CLUSTER || "default.schqzct.mongodb.net";
+    const mongoAppName = process.env.MONGO_APP_NAME || "default";
+
+    if (!mongoUsername || !mongoPassword) {
+      console.error(
+        "ERROR: Either MONGO_URI or both MONGO_USERNAME and MONGO_PASSWORD are required"
+      );
+      process.exit(1);
+    }
+
+    // Encode username and password to handle special characters
+    const encodedUsername = encodeURIComponent(mongoUsername);
+    const encodedPassword = encodeURIComponent(mongoPassword);
+
+    mongoURI = `mongodb+srv://${encodedUsername}:${encodedPassword}@${mongoCluster}/?appName=${mongoAppName}`;
   }
 
   const protocol = process.env.NODE_PROTOCOL || "http";
@@ -22,7 +43,7 @@ const config = () => {
     port,
     env: process.env.NODE_ENV || "develop",
     mock: process.env.MOCK_FLAG || "false",
-    mongoURI: process.env.MONGO_URI,
+    mongoURI,
     baseUrl: `${protocol}://${hostname}:${port}`,
     defaultExpirationHours,
   };
