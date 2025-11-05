@@ -226,6 +226,217 @@ router.get(
   }
 );
 
+// @route     GET /api/url/details/:urlCode
+// @desc      Get detailed URL information including expiration
+router.get(
+  "/details/:urlCode",
+  [
+    param("urlCode")
+      .trim()
+      .notEmpty()
+      .withMessage("URL code is required")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage("Invalid URL code format"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array().map((err) => err.msg),
+      });
+    }
+
+    try {
+      const { urlCode } = req.params;
+      const url = await Url.findOne({ urlCode });
+
+      if (!url) {
+        return res.status(404).json({
+          success: false,
+          message: "Short URL not found",
+        });
+      }
+
+      // Calculate expiration info
+      const now = new Date();
+      let expirationInfo = null;
+
+      if (url.expiresAt) {
+        const remainingMs = url.expiresAt.getTime() - now.getTime();
+        const isExpired = remainingMs <= 0;
+
+        expirationInfo = {
+          expiresAt: url.expiresAt,
+          isExpired,
+          remainingMs: isExpired ? 0 : remainingMs,
+          remainingHours: isExpired
+            ? 0
+            : Math.floor(remainingMs / (1000 * 60 * 60)),
+          remainingDays: isExpired
+            ? 0
+            : Math.floor(remainingMs / (1000 * 60 * 60 * 24)),
+        };
+      }
+
+      res.json({
+        success: true,
+        data: {
+          urlCode: url.urlCode,
+          longUrl: url.longUrl,
+          shortUrl: url.shortUrl,
+          isCustom: url.isCustom,
+          createdAt: url.date,
+          expirationInfo,
+          totalClicks: url.clicks,
+          lastClickedAt: url.lastClickedAt,
+        },
+      });
+    } catch (err) {
+      logger.error("Error fetching URL details:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
+// @route     PUT /api/url/edit/:urlCode
+// @desc      Edit an existing shortened URL (alias and/or destination)
+router.put(
+  "/edit/:urlCode",
+  [
+    param("urlCode")
+      .trim()
+      .notEmpty()
+      .withMessage("URL code is required")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage("Invalid URL code format"),
+    body("longUrl")
+      .optional()
+      .trim()
+      .isURL({
+        protocols: ["http", "https"],
+        require_protocol: true,
+      })
+      .withMessage("Please provide a valid URL with http or https protocol")
+      .isLength({ max: 2048 })
+      .withMessage("URL is too long (maximum 2048 characters)"),
+    body("newUrlCode")
+      .optional()
+      .trim()
+      .isLength({ min: 3, max: 30 })
+      .withMessage("Custom code must be between 3 and 30 characters")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage(
+        "Custom code can only contain letters, numbers, hyphens, and underscores"
+      ),
+    body("resetExpiration")
+      .optional()
+      .isBoolean()
+      .withMessage("resetExpiration must be a boolean"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array().map((err) => err.msg),
+      });
+    }
+
+    try {
+      const { urlCode } = req.params;
+      const { longUrl, newUrlCode, resetExpiration } = req.body;
+
+      // Find the existing URL
+      const url = await Url.findOne({ urlCode });
+
+      if (!url) {
+        return res.status(404).json({
+          success: false,
+          message: "Short URL not found",
+        });
+      }
+
+      // Check if URL is expired
+      if (url.expiresAt && new Date() > url.expiresAt) {
+        return res.status(410).json({
+          success: false,
+          message: "This short URL has expired and cannot be edited",
+        });
+      }
+
+      // Validate new URL if provided
+      if (longUrl && !validUrl.isUri(longUrl)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid URL format",
+        });
+      }
+
+      // If changing URL code, check if new code is available
+      if (newUrlCode && newUrlCode !== urlCode) {
+        const existingUrl = await Url.findOne({ urlCode: newUrlCode });
+        if (existingUrl) {
+          return res.status(409).json({
+            success: false,
+            message:
+              "New URL code is already taken. Please choose another one.",
+          });
+        }
+      }
+
+      // Update fields
+      if (longUrl) {
+        url.longUrl = longUrl;
+      }
+
+      if (newUrlCode && newUrlCode !== urlCode) {
+        url.urlCode = newUrlCode;
+        url.shortUrl = `${config.baseUrl}/${newUrlCode}`;
+        url.isCustom = true;
+      }
+
+      // Reset expiration timer if requested or if default expiration should apply
+      if (resetExpiration === true || resetExpiration === undefined) {
+        const expirationDate = new Date();
+        expirationDate.setHours(
+          expirationDate.getHours() + config.defaultExpirationHours
+        );
+        url.expiresAt = expirationDate;
+      }
+
+      await url.save();
+
+      logger.info(
+        `URL edited: ${urlCode} -> ${url.urlCode} (longUrl: ${url.longUrl}, expires: ${url.expiresAt ? url.expiresAt.toISOString() : "never"})`
+      );
+
+      res.json({
+        success: true,
+        data: url,
+        message: "URL updated successfully",
+      });
+    } catch (err) {
+      logger.error("Error editing URL:", err);
+
+      if (err.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: "URL code already exists, please try again",
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
 // @route     GET /api/url/info/:urlCode
 // @desc      Get URL info without recording a click (for redirect page)
 router.get(
