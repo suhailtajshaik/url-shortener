@@ -7,7 +7,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const config = require("./config.js");
-const connectDB = require("./db");
+const { initSupabase } = require("./db/supabase");
 const logger = require("./utils/logger");
 
 const app = express();
@@ -46,8 +46,8 @@ const shortenLimiter = rateLimit({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// connnect to db
-connectDB();
+// Initialize Supabase client
+initSupabase();
 
 app.use(express.static(path.join("..", "client")));
 

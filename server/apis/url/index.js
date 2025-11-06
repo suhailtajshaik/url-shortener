@@ -113,7 +113,7 @@ router.post(
       }
 
       // Create new URL document
-      const url = new Url({
+      const url = await Url.create({
         longUrl,
         shortUrl,
         urlCode,
@@ -121,8 +121,6 @@ router.post(
         expiresAt,
         date: new Date(),
       });
-
-      await url.save();
 
       logger.info(
         `URL shortened: ${longUrl} -> ${shortUrl}${isCustom ? " (custom)" : ""}${expiresAt ? ` (expires: ${expiresAt.toISOString()})` : ""}`
@@ -136,16 +134,9 @@ router.post(
     } catch (err) {
       logger.error("Error in /shorten:", err);
 
-      // Handle specific mongoose errors
-      if (err.name === "ValidationError") {
-        return res.status(400).json({
-          success: false,
-          message: "Validation error",
-          errors: Object.values(err.errors).map((e) => e.message),
-        });
-      }
-
-      if (err.code === 11000) {
+      // Handle specific Supabase/PostgreSQL errors
+      if (err.code === "23505") {
+        // Unique constraint violation
         return res.status(409).json({
           success: false,
           message: "URL code already exists, please try again",
@@ -192,13 +183,16 @@ router.get(
         });
       }
 
+      // Get click details
+      const clickDetails = await Url.getClickDetails(urlCode, 100);
+
       // Calculate location statistics
-      const clicksWithLocation = url.clickDetails.filter(
+      const clicksWithLocation = clickDetails.filter(
         (click) => click.location && click.location.permissionGranted
       );
       const locationPermissionRate =
-        url.clickDetails.length > 0
-          ? (clicksWithLocation.length / url.clickDetails.length) * 100
+        clickDetails.length > 0
+          ? (clicksWithLocation.length / clickDetails.length) * 100
           : 0;
 
       // Return analytics data
@@ -213,7 +207,7 @@ router.get(
           lastClickedAt: url.lastClickedAt,
           clicksWithLocation: clicksWithLocation.length,
           locationPermissionRate: locationPermissionRate.toFixed(2) + "%",
-          recentClicks: url.clickDetails.slice(-10), // Last 10 clicks with location
+          recentClicks: clickDetails.slice(0, 10), // Last 10 clicks
         },
       });
     } catch (err) {
@@ -368,8 +362,8 @@ router.put(
         });
       }
 
-      // Update destination URL
-      url.longUrl = longUrl;
+      // Prepare updates
+      const updates = { longUrl };
 
       // Reset expiration timer if requested or if default expiration should apply
       if (resetExpiration === true || resetExpiration === undefined) {
@@ -377,18 +371,19 @@ router.put(
         expirationDate.setHours(
           expirationDate.getHours() + config.defaultExpirationHours
         );
-        url.expiresAt = expirationDate;
+        updates.expiresAt = expirationDate;
       }
 
-      await url.save();
+      // Update the URL
+      const updatedUrl = await Url.update(urlCode, updates);
 
       logger.info(
-        `URL edited: ${urlCode} (longUrl: ${url.longUrl}, expires: ${url.expiresAt ? url.expiresAt.toISOString() : "never"})`
+        `URL edited: ${urlCode} (longUrl: ${updatedUrl.longUrl}, expires: ${updatedUrl.expiresAt ? new Date(updatedUrl.expiresAt).toISOString() : "never"})`
       );
 
       res.json({
         success: true,
-        data: url,
+        data: updatedUrl,
         message: "URL updated successfully",
       });
     } catch (err) {
@@ -427,7 +422,7 @@ router.delete(
       const { urlCode } = req.params;
 
       // Find and delete the URL
-      const url = await Url.findOneAndDelete({ urlCode });
+      const url = await Url.delete(urlCode);
 
       if (!url) {
         return res.status(404).json({
@@ -583,7 +578,7 @@ router.post(
       }
 
       // Record click with location data
-      await url.recordClick(clickData);
+      await Url.recordClick(urlCode, clickData);
 
       logger.info(
         `Click tracked: ${urlCode} -> ${url.longUrl} ${
