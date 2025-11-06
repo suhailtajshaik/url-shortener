@@ -33,6 +33,8 @@
     "morgan": "^1.10.0",
     "qrcode": "^1.5.4",
     "shortid": "^2.2.16",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "valid-url": "^1.0.9",
     "winston": "^3.17.0"
   },
