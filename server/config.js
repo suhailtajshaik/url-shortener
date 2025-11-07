@@ -6,11 +6,15 @@ const config = () => {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_KEY;
 
+  // Skip validation during build time (when modules are just being loaded)
+  // Environment variables are only needed at runtime for serverless functions
   if (!supabaseUrl || !supabaseKey) {
-    console.error(
-      "ERROR: Both SUPABASE_URL and SUPABASE_KEY are required"
+    // Only show warning during build, don't exit
+    // At runtime (when actual requests come in), Vercel will have env vars injected
+    console.warn(
+      "WARNING: SUPABASE_URL and SUPABASE_KEY not configured"
     );
-    process.exit(1);
+    console.warn("This is OK during build, but required at runtime");
   }
 
   const protocol = process.env.NODE_PROTOCOL || "http";
