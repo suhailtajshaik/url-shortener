@@ -21,6 +21,18 @@ const config = () => {
   const defaultExpirationHours =
     parseInt(process.env.DEFAULT_URL_EXPIRATION_HOURS) || 720;
 
+  // For Vercel deployments, use VERCEL_URL if available
+  let baseUrl;
+  if (process.env.VERCEL_URL) {
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  } else if (process.env.VERCEL) {
+    // Running on Vercel but VERCEL_URL not set
+    baseUrl = `${protocol}://${hostname}`;
+  } else {
+    // Local development or other hosting
+    baseUrl = `${protocol}://${hostname}:${port}`;
+  }
+
   return {
     protocol,
     hostname,
@@ -29,7 +41,7 @@ const config = () => {
     mock: process.env.MOCK_FLAG || "false",
     supabaseUrl,
     supabaseKey,
-    baseUrl: `${protocol}://${hostname}:${port}`,
+    baseUrl,
     defaultExpirationHours,
   };
 };
