@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>URL Shortener - Simple & Professional</title>
+  <title>URL Shortener - Modern & Simple</title>
 
   <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -18,645 +18,1330 @@
     }
 
     :root {
-      /* Teable Design System Colors */
-      --primary-50: #f0f9ff;
-      --primary-100: #e0f2fe;
-      --primary-500: #0ea5e9;
-      --primary-600: #0284c7;
-      --primary-700: #0369a1;
-
-      --secondary-50: #f8fafc;
-      --secondary-100: #f1f5f9;
-      --secondary-200: #e2e8f0;
-      --secondary-300: #cbd5e1;
-      --secondary-500: #64748b;
-      --secondary-700: #334155;
-      --secondary-900: #0f172a;
-
-      --success-50: #f0fdf4;
-      --success-500: #22c55e;
-      --success-600: #16a34a;
-
-      --neutral-100: #f5f5f5;
-      --neutral-800: #262626;
-
-      /* Semantic Colors */
       --bg-primary: #ffffff;
-      --bg-secondary: #f8fafc;
-      --surface-default: #ffffff;
-      --border-default: #e2e8f0;
-      --border-focus: #0ea5e9;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-tertiary: #94a3b8;
+      --bg-secondary: #f7f6f3;
+      --bg-tertiary: #f1f0ed;
+      --bg-hover: #ececea;
 
-      /* Shadows */
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      --text-primary: #37352f;
+      --text-secondary: #787774;
+      --text-tertiary: #9b9a97;
+
+      --border-default: #e3e2df;
+      --border-hover: #d3d2ce;
+
+      --accent-blue: #0b6bcb;
+      --accent-blue-light: #edf5ff;
+      --accent-green: #0d9488;
+      --accent-green-light: #f0fdfa;
+      --accent-red: #dc2626;
+      --accent-red-light: #fef2f2;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg-secondary);
       color: var(--text-primary);
-      min-height: 100vh;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* Layout */
+    .app-container {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      line-height: 1.5;
+      min-height: 100vh;
     }
 
-    .container {
-      width: 100%;
-      max-width: 42rem;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 2.5rem;
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-default);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .logo {
-      width: 4rem;
-      height: 4rem;
-      margin: 0 auto 1rem;
-      background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-      border-radius: 1rem;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: var(--shadow-lg);
+      gap: 10px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
     }
 
-    h1 {
-      font-size: 2.25rem;
+    .logo-icon {
+      font-size: 24px;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .page {
+      display: none;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 32px;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 0.75rem;
-      letter-spacing: -0.02em;
+      margin-bottom: 8px;
     }
 
-    .subtitle {
-      font-size: 1rem;
+    .page-subtitle {
+      font-size: 15px;
       color: var(--text-secondary);
-      font-weight: 400;
     }
 
+    /* Cards */
     .card {
-      background: var(--surface-default);
-      border-radius: 1rem;
-      border: 1px solid var(--border-default);
-      box-shadow: var(--shadow-xl);
-      overflow: hidden;
-    }
-
-    .card-body {
-      padding: 2.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-    }
-
-    input[type="url"] {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: 2px solid var(--border-default);
-      border-radius: 0.5rem;
       background: var(--bg-primary);
-      color: var(--text-primary);
-      transition: all 0.2s ease-in-out;
-      font-family: inherit;
-    }
-
-    input[type="url"]:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-    }
-
-    input[type="url"]::placeholder {
-      color: var(--text-tertiary);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-center;
-      width: 100%;
-      padding: 0.75rem 1.25rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 0.5rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      font-family: inherit;
-    }
-
-    .btn-primary {
-      background: var(--primary-600);
-      color: white;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 16px;
       box-shadow: var(--shadow-sm);
     }
 
-    .btn-primary:hover {
-      background: var(--primary-700);
-      box-shadow: var(--shadow-md);
-      transform: translateY(-1px);
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
     }
 
-    .btn-primary:active {
-      transform: translateY(0);
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-default);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .input:hover {
+      border-color: var(--border-hover);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px var(--accent-blue-light);
+    }
+
+    .input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0a5fba;
     }
 
     .btn-primary:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
 
-    .btn-outline {
-      background: white;
-      color: var(--primary-600);
-      border: 2px solid var(--primary-600);
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
     }
 
-    .btn-outline:hover {
-      background: var(--primary-50);
+    .btn-secondary:hover {
+      background: var(--bg-hover);
     }
 
     .btn-ghost {
       background: transparent;
       color: var(--text-secondary);
-      padding: 0.5rem 1rem;
     }
 
     .btn-ghost:hover {
-      background: var(--secondary-100);
+      background: var(--bg-hover);
       color: var(--text-primary);
     }
 
+    .btn-danger {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
     .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
+      padding: 6px 12px;
+      font-size: 13px;
     }
 
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 1.5rem;
-    }
-
-    .loading.show {
-      display: block;
-    }
-
-    .spinner {
-      width: 2.5rem;
-      height: 2.5rem;
-      border: 3px solid var(--secondary-200);
-      border-top-color: var(--primary-600);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 0.75rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-    }
-
+    /* Alert */
     .alert {
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin-bottom: 1.5rem;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
       display: none;
-      border-left: 4px solid;
+      font-size: 14px;
     }
 
     .alert.show {
       display: block;
     }
 
+    .alert-success {
+      background: var(--accent-green-light);
+      color: var(--accent-green);
+      border: 1px solid #a7f3d0;
+    }
+
     .alert-error {
-      background: #fef2f2;
-      border-color: #dc2626;
-      color: #991b1b;
+      background: var(--accent-red-light);
+      color: var(--accent-red);
+      border: 1px solid #fecaca;
     }
 
-    .result-section {
+    /* Result Box */
+    .result-box {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 24px;
       display: none;
-      border-top: 1px solid var(--border-default);
-      padding-top: 2rem;
-      margin-top: 2rem;
     }
 
-    .result-section.show {
+    .result-box.show {
       display: block;
     }
 
-    .result-header {
+    .result-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .result-url {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .result-header h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .success-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.75rem;
-      background: var(--success-50);
-      color: var(--success-600);
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .url-box {
-      display: flex;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: var(--secondary-50);
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-primary);
       border: 1px solid var(--border-default);
-      border-radius: 0.75rem;
-      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 12px;
     }
 
-    .url-text {
-      flex: 1;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--primary-600);
+    .result-url-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--accent-blue);
       word-break: break-all;
-      display: flex;
-      align-items: center;
     }
 
-    .copy-btn-inline {
-      padding: 0.5rem 1rem;
-      background: var(--primary-600);
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      white-space: nowrap;
-    }
-
-    .copy-btn-inline:hover {
-      background: var(--primary-700);
-    }
-
-    .copy-btn-inline.copied {
-      background: var(--success-600);
-    }
-
-    .qr-section {
-      background: var(--secondary-50);
-      border: 1px solid var(--border-default);
-      border-radius: 0.75rem;
-      padding: 1.5rem;
+    .qr-container {
       text-align: center;
-    }
-
-    .qr-header {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-    }
-
-    .qr-image-container {
-      display: inline-block;
-      padding: 1rem;
-      background: white;
-      border-radius: 0.75rem;
+      padding: 16px;
+      background: var(--bg-primary);
       border: 1px solid var(--border-default);
-      margin-bottom: 1rem;
+      border-radius: 6px;
     }
 
     .qr-image {
-      display: block;
-      max-width: 16rem;
+      max-width: 200px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table {
       width: 100%;
-      height: auto;
+      border-collapse: collapse;
     }
 
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
+    .table thead {
+      background: var(--bg-tertiary);
     }
 
-    .original-url {
-      margin-top: 1rem;
-      padding: 0.75rem;
-      background: var(--secondary-100);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
+    .table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--text-secondary);
-      word-break: break-all;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-default);
     }
 
-    .original-url-label {
+    .table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .table tbody tr:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .url-cell {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--accent-blue);
+      cursor: pointer;
+    }
+
+    .url-cell:hover {
+      text-decoration: underline;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-custom {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-auto {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background 0.15s;
+      font-size: 16px;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-hover);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-size: 18px;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 0.25rem;
+      margin-bottom: 8px;
     }
 
-    @media (max-width: 640px) {
-      .card-body {
-        padding: 1.5rem;
-      }
+    .empty-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
 
-      h1 {
-        font-size: 1.875rem;
-      }
+    /* Loading Spinner */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
 
-      .url-box {
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-primary);
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-default);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container {
         flex-direction: column;
       }
 
-      .copy-btn-inline {
+      .sidebar {
         width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-default);
+        padding: 16px;
       }
 
-      .button-group {
-        flex-direction: column;
+      .page {
+        padding: 32px 20px;
       }
 
-      .btn {
-        width: 100%;
+      .page-title {
+        font-size: 24px;
+      }
+
+      .table-container {
+        overflow-x: auto;
       }
     }
 
-    /* Smooth animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* Utilities */
+    .text-center {
+      text-align: center;
     }
 
-    .result-section.show {
-      animation: fadeInUp 0.3s ease-out;
+    .mt-2 {
+      margin-top: 16px;
+    }
+
+    .mb-2 {
+      margin-bottom: 16px;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="logo">🔗</div>
-      <h1>URL Shortener</h1>
-      <p class="subtitle">Create short, shareable links with QR codes</p>
-    </div>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">🔗</span>
+        <span class="logo-text">URL Shortener</span>
+      </div>
 
-    <!-- Main Card -->
-    <div class="card">
-      <div class="card-body">
-        <!-- Error Alert -->
-        <div id="errorAlert" class="alert alert-error">
-          <span id="errorMessage"></span>
+      <nav>
+        <div class="nav-item active" onclick="showPage('create')">
+          <span class="nav-icon">✨</span>
+          <span>Create Short URL</span>
+        </div>
+        <div class="nav-item" onclick="showPage('my-urls')">
+          <span class="nav-icon">📋</span>
+          <span>My URLs</span>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Create Page -->
+      <div id="create-page" class="page active">
+        <div class="page-header">
+          <h1 class="page-title">Create Short URL</h1>
+          <p class="page-subtitle">Shorten your long URLs and generate QR codes instantly</p>
         </div>
 
-        <!-- Form -->
-        <form id="shortenForm">
-          <div class="form-group">
-            <label for="longUrl">Enter your URL</label>
-            <input
-              type="url"
-              id="longUrl"
-              name="longUrl"
-              placeholder="https://example.com/your-long-url"
-              required
-              autofocus
-            >
-          </div>
+        <div class="alert alert-error" id="createError"></div>
+        <div class="alert alert-success" id="createSuccess"></div>
 
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            Shorten URL
-          </button>
-        </form>
+        <div class="card">
+          <form id="createForm">
+            <div class="form-group">
+              <label class="form-label" for="longUrl">Long URL *</label>
+              <input
+                type="url"
+                id="longUrl"
+                class="input"
+                placeholder="https://example.com/your-very-long-url"
+                required
+              >
+            </div>
 
-        <!-- Loading State -->
-        <div id="loading" class="loading">
-          <div class="spinner"></div>
-          <p class="loading-text">Creating your short link...</p>
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="useCustomCode" class="checkbox" onchange="toggleCustomCode()">
+                <label for="useCustomCode" class="checkbox-label">Use custom short code</label>
+              </div>
+            </div>
+
+            <div class="form-group hidden" id="customCodeGroup">
+              <label class="form-label" for="customCode">Custom Short Code</label>
+              <input
+                type="text"
+                id="customCode"
+                class="input"
+                placeholder="my-custom-code"
+                pattern="[a-zA-Z0-9_-]{3,30}"
+              >
+              <div class="form-hint">3-30 characters: letters, numbers, hyphens, and underscores only</div>
+            </div>
+
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="useExpiration" class="checkbox" onchange="toggleExpiration()">
+                <label for="useExpiration" class="checkbox-label">Set expiration time</label>
+              </div>
+            </div>
+
+            <div class="form-group hidden" id="expirationGroup">
+              <label class="form-label" for="expiresIn">Expires In (hours)</label>
+              <input
+                type="number"
+                id="expiresIn"
+                class="input"
+                placeholder="720"
+                min="1"
+                max="8760"
+              >
+              <div class="form-hint">Maximum 8760 hours (1 year)</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="createBtn">
+              <span id="createBtnText">Create Short URL</span>
+            </button>
+          </form>
         </div>
 
         <!-- Result Section -->
-        <div id="resultSection" class="result-section">
-          <!-- Success Header -->
-          <div class="result-header">
-            <h3>Your short URL</h3>
-            <span class="success-badge">✓ Created</span>
-          </div>
-
-          <!-- Short URL Display -->
-          <div class="url-box">
-            <div class="url-text" id="shortUrl"></div>
-            <button type="button" class="copy-btn-inline" id="copyBtn" onclick="copyToClipboard()">
-              Copy
+        <div class="result-box" id="resultBox">
+          <div class="result-label">Your Short URL</div>
+          <div class="result-url">
+            <span class="result-url-text" id="shortUrlDisplay"></span>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="copyShortUrl()">
+              <span id="copyBtnText">Copy</span>
             </button>
           </div>
 
-          <!-- QR Code Section -->
-          <div class="qr-section">
-            <div class="qr-header">QR Code</div>
-            <div class="qr-image-container">
-              <img id="qrImage" class="qr-image" alt="QR Code" />
-            </div>
-            <div class="button-group">
-              <button type="button" class="btn btn-outline btn-sm" onclick="downloadQR()">
-                💾 Download QR Code
-              </button>
-              <button type="button" class="btn btn-ghost btn-sm" onclick="createAnother()">
-                Create Another
+          <div class="qr-container">
+            <img id="qrCode" class="qr-image" alt="QR Code">
+            <div>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="downloadQR()">
+                📥 Download QR Code
               </button>
             </div>
           </div>
 
-          <!-- Original URL Reference -->
-          <div class="original-url">
-            <div class="original-url-label">Original URL:</div>
-            <div id="originalUrl"></div>
+          <div style="margin-top: 16px; text-align: center;">
+            <button type="button" class="btn btn-sm btn-ghost" onclick="createAnother()">
+              Create Another URL
+            </button>
           </div>
         </div>
+      </div>
+
+      <!-- My URLs Page -->
+      <div id="my-urls-page" class="page">
+        <div class="page-header">
+          <h1 class="page-title">My URLs</h1>
+          <p class="page-subtitle">Manage and track all your shortened URLs</p>
+        </div>
+
+        <div id="urlsTableContainer">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit URL Destination</h2>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-error" id="editError"></div>
+
+        <div class="form-group">
+          <label class="form-label">Short Code</label>
+          <input type="text" id="editUrlCode" class="input" disabled>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editLongUrl">New Destination URL *</label>
+          <input type="url" id="editLongUrl" class="input" required>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="editResetExpiration" class="checkbox" checked>
+            <label for="editResetExpiration" class="checkbox-label">Reset expiration timer</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Modal -->
+  <div class="modal-overlay" id="analyticsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">URL Analytics</h2>
+      </div>
+      <div class="modal-body" id="analyticsContent">
+        <!-- Will be populated by JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeAnalyticsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">QR Code</h2>
+      </div>
+      <div class="modal-body text-center">
+        <img id="qrModalImage" class="qr-image" alt="QR Code" style="max-width: 300px;">
+        <div style="margin-top: 16px;">
+          <button type="button" class="btn btn-secondary" onclick="downloadModalQR()">
+            📥 Download QR Code
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeQRModal()">Close</button>
       </div>
     </div>
   </div>
 
   <script>
-    const form = document.getElementById('shortenForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const loading = document.getElementById('loading');
-    const errorAlert = document.getElementById('errorAlert');
-    const errorMessage = document.getElementById('errorMessage');
-    const resultSection = document.getElementById('resultSection');
-    const shortUrlDisplay = document.getElementById('shortUrl');
-    const originalUrlDisplay = document.getElementById('originalUrl');
-    const qrImage = document.getElementById('qrImage');
-    const copyBtn = document.getElementById('copyBtn');
-
+    // State
     let currentUrlCode = null;
+    let currentQRData = null;
+    let allUrls = [];
 
-    // Form submission
-    form.addEventListener('submit', async (e) => {
+    // Page Navigation
+    function showPage(pageName) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+      const pageId = pageName === 'create' ? 'create-page' : 'my-urls-page';
+      document.getElementById(pageId).classList.add('active');
+
+      event.target.closest('.nav-item').classList.add('active');
+
+      if (pageName === 'my-urls') {
+        loadAllUrls();
+      }
+    }
+
+    // Toggle Functions
+    function toggleCustomCode() {
+      const checkbox = document.getElementById('useCustomCode');
+      const group = document.getElementById('customCodeGroup');
+      const input = document.getElementById('customCode');
+
+      if (checkbox.checked) {
+        group.classList.remove('hidden');
+        input.required = true;
+      } else {
+        group.classList.add('hidden');
+        input.required = false;
+        input.value = '';
+      }
+    }
+
+    function toggleExpiration() {
+      const checkbox = document.getElementById('useExpiration');
+      const group = document.getElementById('expirationGroup');
+      const input = document.getElementById('expiresIn');
+
+      if (checkbox.checked) {
+        group.classList.remove('hidden');
+        input.required = true;
+      } else {
+        group.classList.add('hidden');
+        input.required = false;
+        input.value = '';
+      }
+    }
+
+    // Create URL Form
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const longUrl = document.getElementById('longUrl').value.trim();
+      const customCode = document.getElementById('useCustomCode').checked
+        ? document.getElementById('customCode').value.trim()
+        : null;
+      const expiresIn = document.getElementById('useExpiration').checked
+        ? parseInt(document.getElementById('expiresIn').value)
+        : null;
 
-      // Reset UI
-      hideError();
-      hideResult();
-      showLoading();
+      const createBtn = document.getElementById('createBtn');
+      const btnText = document.getElementById('createBtnText');
+
+      // Reset alerts
+      hideAlert('createError');
+      hideAlert('createSuccess');
+      document.getElementById('resultBox').classList.remove('show');
+
+      // Loading state
+      createBtn.disabled = true;
+      btnText.innerHTML = '<span class="loading"></span> Creating...';
 
       try {
-        // Create short URL
+        const body = { longUrl };
+        if (customCode) body.customCode = customCode;
+        if (expiresIn) body.expiresIn = expiresIn;
+
         const response = await fetch('/api/url/shorten', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ longUrl }),
+          body: JSON.stringify(body)
         });
 
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message || 'Failed to create short URL');
+          throw new Error(data.message || data.errors?.join(', ') || 'Failed to create short URL');
         }
 
-        // Store URL code
+        // Success
         currentUrlCode = data.data.urlCode;
-
-        // Display results
-        shortUrlDisplay.textContent = data.data.shortUrl;
-        originalUrlDisplay.textContent = data.data.longUrl;
+        document.getElementById('shortUrlDisplay').textContent = data.data.shortUrl;
 
         // Load QR code
         await loadQRCode(currentUrlCode);
 
-        showResult();
+        // Show result
+        document.getElementById('resultBox').classList.add('show');
+        showAlert('createSuccess', data.message || 'Short URL created successfully!');
+
+        // Scroll to result
+        document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
       } catch (error) {
         console.error('Error:', error);
-        showError(error.message || 'Failed to create short URL. Please try again.');
+        showAlert('createError', error.message);
       } finally {
-        hideLoading();
+        createBtn.disabled = false;
+        btnText.textContent = 'Create Short URL';
       }
     });
 
-    // Load QR code
+    // Load QR Code
     async function loadQRCode(urlCode) {
       try {
         const response = await fetch(`/api/url/qrcode/${urlCode}`);
         const data = await response.json();
 
         if (response.ok && data.success) {
-          qrImage.src = data.data.qrCode;
-        } else {
-          console.error('Failed to load QR code');
+          document.getElementById('qrCode').src = data.data.qrCode;
+          currentQRData = data.data.qrCode;
         }
       } catch (error) {
         console.error('Error loading QR code:', error);
       }
     }
 
-    // Copy to clipboard
-    function copyToClipboard() {
-      const shortUrl = shortUrlDisplay.textContent;
+    // Copy Short URL
+    function copyShortUrl() {
+      const shortUrl = document.getElementById('shortUrlDisplay').textContent;
+      const btnText = document.getElementById('copyBtnText');
 
       navigator.clipboard.writeText(shortUrl).then(() => {
-        // Update button
-        copyBtn.textContent = '✓ Copied!';
-        copyBtn.classList.add('copied');
-
-        // Reset after 2 seconds
+        btnText.textContent = '✓ Copied!';
         setTimeout(() => {
-          copyBtn.textContent = 'Copy';
-          copyBtn.classList.remove('copied');
+          btnText.textContent = 'Copy';
         }, 2000);
       }).catch(err => {
         console.error('Failed to copy:', err);
-        alert('Failed to copy URL to clipboard');
       });
     }
 
-    // Download QR code
+    // Download QR Code
     function downloadQR() {
+      if (!currentQRData || !currentUrlCode) return;
+
       const link = document.createElement('a');
-      link.href = qrImage.src;
+      link.href = currentQRData;
       link.download = `qr-code-${currentUrlCode}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    // Create another URL
+    // Create Another URL
     function createAnother() {
-      form.reset();
-      hideResult();
-      hideError();
+      document.getElementById('createForm').reset();
+      document.getElementById('resultBox').classList.remove('show');
+      document.getElementById('customCodeGroup').classList.add('hidden');
+      document.getElementById('expirationGroup').classList.add('hidden');
+      hideAlert('createError');
+      hideAlert('createSuccess');
       document.getElementById('longUrl').focus();
     }
 
-    // UI Helpers
-    function showLoading() {
-      loading.classList.add('show');
-      submitBtn.disabled = true;
+    // Load All URLs
+    async function loadAllUrls() {
+      const container = document.getElementById('urlsTableContainer');
+
+      // For now, we'll use localStorage to store URLs since there's no "list all" endpoint
+      // In a production app, you'd want a backend endpoint for this
+      const storedUrls = JSON.parse(localStorage.getItem('myUrls') || '[]');
+
+      if (storedUrls.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔗</div>
+            <div class="empty-title">No URLs yet</div>
+            <div class="empty-text">Create your first short URL to get started</div>
+            <button class="btn btn-primary mt-2" onclick="showPage('create'); event.stopPropagation()">
+              Create Short URL
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Fetch details for each URL
+      const urlDetails = await Promise.all(
+        storedUrls.map(async (urlCode) => {
+          try {
+            const response = await fetch(`/api/url/details/${urlCode}`);
+            const data = await response.json();
+            return data.success ? data.data : null;
+          } catch (error) {
+            console.error(`Error loading ${urlCode}:`, error);
+            return null;
+          }
+        })
+      );
+
+      allUrls = urlDetails.filter(url => url !== null);
+
+      // Render table
+      container.innerHTML = `
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Short Code</th>
+                <th>Destination URL</th>
+                <th>Clicks</th>
+                <th>Type</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allUrls.map(url => `
+                <tr>
+                  <td>
+                    <span class="url-cell" onclick="window.open('${url.shortUrl}', '_blank')">
+                      ${url.urlCode}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="url-cell" title="${url.longUrl}">
+                      ${url.longUrl}
+                    </span>
+                  </td>
+                  <td>${url.totalClicks || 0}</td>
+                  <td>
+                    <span class="badge ${url.isCustom ? 'badge-custom' : 'badge-auto'}">
+                      ${url.isCustom ? 'Custom' : 'Auto'}
+                    </span>
+                  </td>
+                  <td>${new Date(url.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="icon-btn" onclick="viewAnalytics('${url.urlCode}')" title="Analytics">
+                        📊
+                      </button>
+                      <button class="icon-btn" onclick="viewQR('${url.urlCode}')" title="QR Code">
+                        📱
+                      </button>
+                      <button class="icon-btn" onclick="editUrl('${url.urlCode}', '${url.longUrl.replace(/'/g, "\\'")}')" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="icon-btn" onclick="deleteUrl('${url.urlCode}')" title="Delete">
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
-    function hideLoading() {
-      loading.classList.remove('show');
-      submitBtn.disabled = false;
+    // Store URL in localStorage when created
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+      const response = await originalFetch.apply(this, args);
+
+      if (args[0] === '/api/url/shorten' && args[1]?.method === 'POST') {
+        const clone = response.clone();
+        const data = await clone.json();
+
+        if (data.success && data.data.urlCode) {
+          const storedUrls = JSON.parse(localStorage.getItem('myUrls') || '[]');
+          if (!storedUrls.includes(data.data.urlCode)) {
+            storedUrls.unshift(data.data.urlCode);
+            localStorage.setItem('myUrls', JSON.stringify(storedUrls));
+          }
+        }
+      }
+
+      return response;
+    };
+
+    // Edit URL
+    let currentEditUrlCode = null;
+
+    function editUrl(urlCode, longUrl) {
+      currentEditUrlCode = urlCode;
+      document.getElementById('editUrlCode').value = urlCode;
+      document.getElementById('editLongUrl').value = longUrl;
+      document.getElementById('editResetExpiration').checked = true;
+      hideAlert('editError');
+      document.getElementById('editModal').classList.add('show');
     }
 
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorAlert.classList.add('show');
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('show');
+      currentEditUrlCode = null;
     }
 
-    function hideError() {
-      errorAlert.classList.remove('show');
+    async function saveEdit() {
+      if (!currentEditUrlCode) return;
+
+      const longUrl = document.getElementById('editLongUrl').value.trim();
+      const resetExpiration = document.getElementById('editResetExpiration').checked;
+
+      hideAlert('editError');
+
+      try {
+        const response = await fetch(`/api/url/edit/${currentEditUrlCode}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ longUrl, resetExpiration })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || data.errors?.join(', ') || 'Failed to update URL');
+        }
+
+        closeEditModal();
+        loadAllUrls();
+
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('editError', error.message);
+      }
     }
 
-    function showResult() {
-      resultSection.classList.add('show');
+    // Delete URL
+    async function deleteUrl(urlCode) {
+      if (!confirm(`Are you sure you want to delete the short URL "${urlCode}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/url/${urlCode}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to delete URL');
+        }
+
+        // Remove from localStorage
+        const storedUrls = JSON.parse(localStorage.getItem('myUrls') || '[]');
+        const index = storedUrls.indexOf(urlCode);
+        if (index > -1) {
+          storedUrls.splice(index, 1);
+          localStorage.setItem('myUrls', JSON.stringify(storedUrls));
+        }
+
+        loadAllUrls();
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert(error.message);
+      }
     }
 
-    function hideResult() {
-      resultSection.classList.remove('show');
+    // View Analytics
+    async function viewAnalytics(urlCode) {
+      try {
+        const response = await fetch(`/api/url/stats/${urlCode}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to load analytics');
+        }
+
+        const stats = data.data;
+
+        document.getElementById('analyticsContent').innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Clicks</div>
+              <div class="stat-value">${stats.totalClicks}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">With Location</div>
+              <div class="stat-value">${stats.clicksWithLocation}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Location Rate</div>
+              <div class="stat-value">${stats.locationPermissionRate}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Short URL</label>
+            <div class="result-url">
+              <span class="result-url-text">${stats.shortUrl}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Destination URL</label>
+            <div style="word-break: break-all; color: var(--text-secondary);">
+              ${stats.longUrl}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Created</label>
+            <div>${new Date(stats.createdAt).toLocaleString()}</div>
+          </div>
+
+          ${stats.lastClickedAt ? `
+            <div class="form-group">
+              <label class="form-label">Last Clicked</label>
+              <div>${new Date(stats.lastClickedAt).toLocaleString()}</div>
+            </div>
+          ` : ''}
+
+          ${stats.recentClicks && stats.recentClicks.length > 0 ? `
+            <div class="form-group">
+              <label class="form-label">Recent Clicks (Last 10)</label>
+              <div style="max-height: 200px; overflow-y: auto;">
+                ${stats.recentClicks.map(click => `
+                  <div style="padding: 8px; border-bottom: 1px solid var(--border-default); font-size: 12px;">
+                    <div><strong>${new Date(click.timestamp).toLocaleString()}</strong></div>
+                    <div style="color: var(--text-secondary);">
+                      ${click.location?.permissionGranted ?
+                        `📍 ${click.location.latitude.toFixed(4)}, ${click.location.longitude.toFixed(4)}` :
+                        '📍 Location not available'}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        `;
+
+        document.getElementById('analyticsModal').classList.add('show');
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert(error.message);
+      }
     }
+
+    function closeAnalyticsModal() {
+      document.getElementById('analyticsModal').classList.remove('show');
+    }
+
+    // View QR Code
+    let currentModalQRData = null;
+    let currentModalUrlCode = null;
+
+    async function viewQR(urlCode) {
+      try {
+        const response = await fetch(`/api/url/qrcode/${urlCode}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to load QR code');
+        }
+
+        currentModalQRData = data.data.qrCode;
+        currentModalUrlCode = urlCode;
+        document.getElementById('qrModalImage').src = data.data.qrCode;
+        document.getElementById('qrModal').classList.add('show');
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert(error.message);
+      }
+    }
+
+    function closeQRModal() {
+      document.getElementById('qrModal').classList.remove('show');
+    }
+
+    function downloadModalQR() {
+      if (!currentModalQRData || !currentModalUrlCode) return;
+
+      const link = document.createElement('a');
+      link.href = currentModalQRData;
+      link.download = `qr-code-${currentModalUrlCode}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Alert Helpers
+    function showAlert(id, message) {
+      const alert = document.getElementById(id);
+      alert.textContent = message;
+      alert.classList.add('show');
+    }
+
+    function hideAlert(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('show');
+        }
+      });
+    });
   </script>
 </body>
 </html>
