@@ -4,11 +4,11 @@ const express = require("express");
 const router = express.Router();
 const { body, param, validationResult } = require("express-validator");
 const validUrl = require("valid-url");
-const shortid = require("shortid");
 const QRCode = require("qrcode");
 const logger = require("../../utils/logger");
 const config = require("../../config.js");
 const Url = require("../../db/models/Url");
+const codeGenerator = require("../../utils/urlCodeGenerator");
 
 /**
  * @swagger
@@ -184,14 +184,40 @@ router.post(
         urlCode = customCode;
         isCustom = true;
       } else {
-        // Generate unique URL code
-        urlCode = shortid.generate();
+        // Generate unique URL code using SHA-256 strategy for better collision resistance
+        // Fallback strategies: SHA-256 -> Random -> MD5
+        const strategy = process.env.CODE_GENERATION_STRATEGY || "sha256";
+        const codeLength = parseInt(process.env.CODE_LENGTH) || 7;
 
-        // Ensure the code is unique (very unlikely collision, but good practice)
+        urlCode = codeGenerator.generate({
+          strategy: strategy,
+          url: longUrl,
+          length: codeLength,
+        });
+
+        // Ensure the code is unique (very unlikely collision with SHA-256, but good practice)
         let existingCode = await Url.findOne({ urlCode });
-        while (existingCode) {
-          urlCode = shortid.generate();
+        let attempts = 0;
+        const maxAttempts = 5;
+
+        while (existingCode && attempts < maxAttempts) {
+          // Use random strategy for regeneration to avoid same hash
+          urlCode = codeGenerator.generate({
+            strategy: "random",
+            length: codeLength,
+          });
           existingCode = await Url.findOne({ urlCode });
+          attempts++;
+        }
+
+        if (existingCode) {
+          logger.error(
+            `Failed to generate unique code after ${maxAttempts} attempts`
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Unable to generate unique short code. Please try again.",
+          });
         }
       }
 
