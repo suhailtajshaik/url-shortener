@@ -5,6 +5,13 @@ const logger = require("../utils/logger");
 let supabase = null;
 
 const initSupabase = () => {
+  // Check if credentials are available before attempting to initialize
+  if (!config.supabaseUrl || !config.supabaseKey) {
+    logger.warn("Supabase credentials not configured. Database features will be disabled.");
+    logger.warn("Set SUPABASE_URL and SUPABASE_KEY environment variables to enable database.");
+    return null;
+  }
+
   try {
     supabase = createClient(config.supabaseUrl, config.supabaseKey, {
       auth: {
@@ -18,7 +25,8 @@ const initSupabase = () => {
     return supabase;
   } catch (err) {
     logger.error("Failed to initialize Supabase client:", err.message);
-    process.exit(1);
+    logger.warn("Application will continue without database functionality.");
+    return null;
   }
 };
 
