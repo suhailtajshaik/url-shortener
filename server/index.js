@@ -77,18 +77,24 @@ logger.info(`Swagger documentation available at ${config.baseUrl}/api-docs`);
 
 require("./routes")(app);
 
-const server = app.listen(config.port, function () {
-  const port = server.address().port;
-  logger.info(`Express server listening on port ${port}, in ${config.env} mode`);
-  logger.info(`Open http://localhost:${port}`);
-});
+// Export app for Vercel serverless functions
+module.exports = app;
 
-server.on("error", function (e) {
-  if (e.code === "EADDRINUSE") {
-    logger.error(`Port ${config.port} is already in use`);
-    process.exit(1);
-  } else {
-    logger.error("Server error:", e);
-    process.exit(1);
-  }
-});
+// Only start server if not in Vercel environment
+if (!process.env.VERCEL) {
+  const server = app.listen(config.port, function () {
+    const port = server.address().port;
+    logger.info(`Express server listening on port ${port}, in ${config.env} mode`);
+    logger.info(`Open http://localhost:${port}`);
+  });
+
+  server.on("error", function (e) {
+    if (e.code === "EADDRINUSE") {
+      logger.error(`Port ${config.port} is already in use`);
+      process.exit(1);
+    } else {
+      logger.error("Server error:", e);
+      process.exit(1);
+    }
+  });
+}
