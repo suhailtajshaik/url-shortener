@@ -123,14 +123,17 @@ The following files are configured for Vercel deployment:
 - Ensure environment variables are set correctly
 - Review build logs in Vercel dashboard
 
-**Application errors:**
-- Check function logs in Vercel dashboard
-- Verify Supabase credentials are correct
+**Application errors (500: FUNCTION_INVOCATION_FAILED):**
+- This usually means environment variables are missing or incorrect
+- Check function logs in Vercel dashboard for detailed error messages
+- Verify Supabase credentials are correct (SUPABASE_URL and SUPABASE_KEY)
 - Ensure Supabase has the correct schema and tables
+- Make sure all required environment variables are set in Vercel project settings
 
 **Routes not working:**
 - Verify `vercel.json` is present and correctly configured
 - Check that all API routes are properly defined in Express
+- Ensure the `api/index.js` entry point exists and exports the Express app correctly
 
 ### Continuous Deployment
 
