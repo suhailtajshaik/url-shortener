@@ -6,9 +6,11 @@ const helmet = require("helmet");
 const cors = require("cors");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const swaggerUi = require("swagger-ui-express");
 const config = require("./config.js");
-const connectDB = require("./db");
+const { initSupabase } = require("./db/supabase");
 const logger = require("./utils/logger");
+const swaggerSpec = require("./swagger");
 
 const app = express();
 
@@ -46,13 +48,32 @@ const shortenLimiter = rateLimit({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// connnect to db
-connectDB();
+// Initialize Supabase client
+initSupabase();
 
 app.use(express.static(path.join("..", "client")));
 
 // Export shortenLimiter for use in routes
 app.set("shortenLimiter", shortenLimiter);
+
+// Swagger API documentation
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "URL Shortener API Documentation",
+    customfavIcon: "https://swagger.io/favicon.ico",
+  })
+);
+
+// Swagger JSON endpoint
+app.get("/api-docs.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
+
+logger.info(`Swagger documentation available at ${config.baseUrl}/api-docs`);
 
 require("./routes")(app);
 

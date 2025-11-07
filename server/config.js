@@ -2,31 +2,15 @@
 require("dotenv").config();
 
 const config = () => {
-  // MongoDB configuration - support both direct URI and username/password
-  let mongoURI;
+  // Supabase configuration
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_KEY;
 
-  if (process.env.MONGO_URI) {
-    // Use direct connection string if provided
-    mongoURI = process.env.MONGO_URI;
-  } else {
-    // Build MongoDB Atlas connection string from username and password
-    const mongoUsername = process.env.MONGO_USERNAME;
-    const mongoPassword = process.env.MONGO_PASSWORD;
-    const mongoCluster = process.env.MONGO_CLUSTER || "default.schqzct.mongodb.net";
-    const mongoAppName = process.env.MONGO_APP_NAME || "default";
-
-    if (!mongoUsername || !mongoPassword) {
-      console.error(
-        "ERROR: Either MONGO_URI or both MONGO_USERNAME and MONGO_PASSWORD are required"
-      );
-      process.exit(1);
-    }
-
-    // Encode username and password to handle special characters
-    const encodedUsername = encodeURIComponent(mongoUsername);
-    const encodedPassword = encodeURIComponent(mongoPassword);
-
-    mongoURI = `mongodb+srv://${encodedUsername}:${encodedPassword}@${mongoCluster}/?appName=${mongoAppName}`;
+  if (!supabaseUrl || !supabaseKey) {
+    console.error(
+      "ERROR: Both SUPABASE_URL and SUPABASE_KEY are required"
+    );
+    process.exit(1);
   }
 
   const protocol = process.env.NODE_PROTOCOL || "http";
@@ -43,7 +27,8 @@ const config = () => {
     port,
     env: process.env.NODE_ENV || "develop",
     mock: process.env.MOCK_FLAG || "false",
-    mongoURI,
+    supabaseUrl,
+    supabaseKey,
     baseUrl: `${protocol}://${hostname}:${port}`,
     defaultExpirationHours,
   };

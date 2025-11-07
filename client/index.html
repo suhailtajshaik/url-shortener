@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>URL Shortener - Make Your Links Shorter</title>
+  <title>URL Shortener - Make Your Links Shorter & Smarter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -12,146 +15,161 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --bg-primary: #0f0f23;
+      --bg-secondary: #1a1a2e;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --text-primary: #ffffff;
+      --text-secondary: #b4b4c5;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.6);
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+      animation: breathe 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.1); }
     }
 
     .container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
-      max-width: 600px;
+      position: relative;
+      z-index: 1;
       width: 100%;
+      max-width: 700px;
+      margin: 40px auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 5px 15px rgba(102, 126, 234, 0.5));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
     }
 
     h1 {
-      color: #333;
-      margin-bottom: 10px;
+      color: var(--text-primary);
       font-size: 2.5rem;
-      text-align: center;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
-      color: #666;
-      text-align: center;
-      margin-bottom: 30px;
+      color: var(--text-secondary);
       font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
     }
 
-    .form-group {
-      margin-bottom: 20px;
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      animation: fadeInUp 0.8s ease 0.2s both;
     }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #444;
-      font-weight: 500;
-    }
-
-    input[type="url"],
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-
-    input[type="url"]:focus,
-    input[type="text"]:focus,
-    input[type="number"]:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .optional-fields {
-      margin-top: 15px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 10px;
-    }
-
-    .optional-fields h4 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 1rem;
-    }
-
-    .help-text {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 5px;
-    }
-
-    .qr-code-section {
-      margin-top: 15px;
-      text-align: center;
-      padding-top: 15px;
-      border-top: 1px solid #e0e0e0;
-    }
-
-    .qr-code-section img {
-      max-width: 250px;
-      margin: 15px auto;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 10px;
-      background: white;
-    }
-
-    .qr-btn {
-      padding: 10px 20px;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-      margin-top: 10px;
-    }
-
-    .qr-btn:hover {
-      background: #218838;
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .tab-container {
       display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      border-bottom: 2px solid #e0e0e0;
+      gap: 12px;
+      margin-bottom: 35px;
+      padding: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
     }
 
     .tab {
-      padding: 12px 24px;
-      background: none;
+      flex: 1;
+      padding: 14px 24px;
+      background: transparent;
       border: none;
-      color: #666;
-      font-size: 16px;
+      color: var(--text-secondary);
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
 
     .tab:hover {
-      color: #667eea;
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .tab.active {
-      color: #667eea;
-      border-bottom-color: #667eea;
+      color: var(--text-primary);
+      background: var(--primary-gradient);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
     }
 
     .tab-content {
@@ -160,22 +178,285 @@
 
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="url"],
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    input[type="url"]::placeholder,
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    input[type="url"]:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .optional-fields {
+      margin-top: 20px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .optional-fields h4 {
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .help-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-danger {
+      background: var(--secondary-gradient);
+      box-shadow: 0 8px 24px rgba(245, 87, 108, 0.3);
+      margin-top: 12px;
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 12px 32px rgba(245, 87, 108, 0.4);
+    }
+
+    .result {
+      display: none;
+      margin-top: 30px;
+      padding: 28px;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 16px;
+      border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .result.show {
+      display: block;
+      animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .result h3 {
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .url-display {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .short-url {
+      flex: 1;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(102, 126, 234, 0.3);
+      border-radius: 12px;
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      padding: 16px 28px;
+      background: var(--success-gradient);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+    }
+
+    .copy-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(79, 172, 254, 0.4);
+    }
+
+    .copy-btn.copied {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .qr-code-section {
+      margin-top: 24px;
+      text-align: center;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .qr-code-section h4 {
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .qr-code-section img {
+      max-width: 280px;
+      margin: 16px auto;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+      background: white;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .qr-btn {
+      padding: 12px 24px;
+      background: var(--success-gradient);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-top: 12px;
+      box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+    }
+
+    .qr-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
     }
 
     .url-info-card {
-      background: #f8f9fa;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 20px;
-      border-left: 4px solid #667eea;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .url-info-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      font-size: 18px;
     }
 
     .info-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .info-row:last-child {
@@ -186,178 +467,74 @@
 
     .info-label {
       font-weight: 600;
-      color: #444;
+      color: var(--text-secondary);
+      font-size: 14px;
     }
 
     .info-value {
-      color: #666;
+      color: var(--text-primary);
       word-break: break-all;
+      text-align: right;
+      font-size: 14px;
     }
 
     .expiration-warning {
-      background: #fff3cd;
-      border-left-color: #ffc107;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 15px;
-      color: #856404;
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #ffc107;
     }
 
     .expiration-expired {
-      background: #f8d7da;
-      border-left-color: #dc3545;
-      color: #721c24;
+      background: rgba(220, 53, 69, 0.1);
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      color: #ff6b6b;
     }
 
     .expiration-good {
-      background: #d4edda;
-      border-left-color: #28a745;
-      color: #155724;
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid rgba(40, 167, 69, 0.3);
+      color: #51cf66;
     }
 
     .countdown {
-      font-size: 1.5rem;
+      font-size: 2rem;
       font-weight: 700;
-      color: #667eea;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       text-align: center;
-      padding: 15px;
-      margin: 15px 0;
-    }
-
-    .btn-secondary {
-      background: #6c757d;
-      margin-top: 10px;
-    }
-
-    .btn-secondary:hover {
-      background: #5a6268;
-    }
-
-    .btn-danger {
-      background: #dc3545;
-      margin-top: 10px;
-    }
-
-    .btn-danger:hover {
-      background: #c82333;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .result {
-      display: none;
-      margin-top: 30px;
       padding: 20px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border-left: 4px solid #667eea;
-    }
-
-    .result.show {
-      display: block;
-      animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .result h3 {
-      color: #333;
-      margin-bottom: 15px;
-    }
-
-    .url-display {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .short-url {
-      flex: 1;
-      padding: 12px;
-      background: white;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 16px;
-      color: #667eea;
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .copy-btn {
-      padding: 12px 20px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-
-    .copy-btn:hover {
-      background: #5568d3;
-    }
-
-    .copy-btn.copied {
-      background: #28a745;
+      margin: 20px 0;
     }
 
     .error {
       display: none;
-      margin-top: 15px;
-      padding: 15px;
-      background: #fee;
+      margin-top: 20px;
+      padding: 18px 24px;
+      background: rgba(220, 53, 69, 0.1);
       border-left: 4px solid #dc3545;
-      border-radius: 8px;
-      color: #721c24;
+      border-radius: 12px;
+      color: #ff6b6b;
+      font-size: 14px;
     }
 
     .error.show {
       display: block;
-      animation: slideDown 0.3s ease;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
     }
 
     .loading {
       display: none;
       text-align: center;
-      margin-top: 20px;
-      color: #667eea;
+      margin-top: 24px;
+      color: var(--text-primary);
     }
 
     .loading.show {
@@ -365,193 +542,235 @@
     }
 
     .spinner {
-      border: 3px solid #f3f3f3;
+      border: 3px solid rgba(255, 255, 255, 0.1);
       border-top: 3px solid #667eea;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       animation: spin 1s linear infinite;
-      margin: 0 auto;
+      margin: 0 auto 16px;
     }
 
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    label:has(input[type="checkbox"]) {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px auto;
+      }
+
+      .card {
+        padding: 28px 24px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .url-display {
+        flex-direction: column;
+      }
+
+      .copy-btn {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔗 URL Shortener</h1>
-    <p class="subtitle">Transform long URLs into short, shareable links</p>
-
-    <!-- Tabs -->
-    <div class="tab-container">
-      <button class="tab active" onclick="switchTab('create')">Create URL</button>
-      <button class="tab" onclick="switchTab('edit')">Edit URL</button>
+    <div class="header">
+      <div class="logo">🔗</div>
+      <h1>URL Shortener</h1>
+      <p class="subtitle">Transform long URLs into short, shareable links</p>
     </div>
 
-    <!-- Create URL Tab -->
-    <div id="createTab" class="tab-content active">
-      <form id="shortenForm">
-      <div class="form-group">
-        <label for="longUrl">Enter your long URL</label>
-        <input
-          type="url"
-          id="longUrl"
-          name="longUrl"
-          placeholder="https://example.com/very/long/url/that/needs/shortening"
-          required
-        >
+    <div class="card">
+      <!-- Tabs -->
+      <div class="tab-container">
+        <button class="tab active" onclick="switchTab('create')">✨ Create URL</button>
+        <button class="tab" onclick="switchTab('edit')">✏️ Manage URL</button>
       </div>
 
-      <div class="optional-fields">
-        <h4>⚙️ Optional Settings</h4>
-
-        <div class="form-group">
-          <label for="customCode">Custom Short Code (optional)</label>
-          <input
-            type="text"
-            id="customCode"
-            name="customCode"
-            placeholder="my-custom-link"
-            pattern="[a-zA-Z0-9_-]{3,30}"
-            minlength="3"
-            maxlength="30"
-          >
-          <p class="help-text">3-30 characters: letters, numbers, hyphens, and underscores only</p>
-        </div>
-
-        <div class="form-group">
-          <label for="expiresIn">Expire After (hours, optional)</label>
-          <input
-            type="number"
-            id="expiresIn"
-            name="expiresIn"
-            placeholder="24"
-            min="1"
-            max="8760"
-          >
-          <p class="help-text">Link expires after specified hours (max 8760 = 1 year)</p>
-        </div>
-      </div>
-
-      <button type="submit" class="btn" id="submitBtn">Shorten URL</button>
-    </form>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p style="margin-top: 10px;">Creating your short URL...</p>
-    </div>
-
-    <div class="error" id="error"></div>
-
-    <div class="result" id="result">
-      <h3>✅ Your shortened URL:</h3>
-      <div class="url-display">
-        <div class="short-url" id="shortUrl"></div>
-        <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">Copy</button>
-      </div>
-      <p style="margin-top: 15px; color: #666; font-size: 14px;">
-        Original URL: <span id="originalUrl" style="word-break: break-all;"></span>
-      </p>
-      <div class="qr-code-section" id="qrSection" style="display: none;">
-        <h4>📱 QR Code</h4>
-        <img id="qrCodeImage" src="" alt="QR Code">
-        <br>
-        <button class="qr-btn" onclick="downloadQR()">Download QR Code</button>
-      </div>
-    </div>
-    </div>
-
-    <!-- Edit URL Tab -->
-    <div id="editTab" class="tab-content">
-      <form id="lookupForm">
-        <div class="form-group">
-          <label for="lookupCode">Enter Short URL Code to Edit</label>
-          <input
-            type="text"
-            id="lookupCode"
-            name="lookupCode"
-            placeholder="my-custom-link"
-            pattern="[a-zA-Z0-9_-]+"
-            required
-          >
-          <p class="help-text">Enter the short code (not the full URL)</p>
-        </div>
-        <button type="submit" class="btn" id="lookupBtn">Lookup URL</button>
-      </form>
-
-      <div class="loading" id="lookupLoading" style="display: none;">
-        <div class="spinner"></div>
-        <p style="margin-top: 10px;">Loading URL details...</p>
-      </div>
-
-      <div class="error" id="lookupError"></div>
-
-      <!-- URL Details and Edit Form -->
-      <div id="urlDetailsSection" style="display: none;">
-        <div class="url-info-card">
-          <h3>📊 URL Details</h3>
-          <div class="info-row">
-            <span class="info-label">Short Code:</span>
-            <span class="info-value" id="detailUrlCode"></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Short URL:</span>
-            <span class="info-value" id="detailShortUrl"></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Destination:</span>
-            <span class="info-value" id="detailLongUrl"></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Created:</span>
-            <span class="info-value" id="detailCreatedAt"></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Total Clicks:</span>
-            <span class="info-value" id="detailClicks"></span>
-          </div>
-        </div>
-
-        <!-- Expiration Info -->
-        <div id="expirationDisplay"></div>
-
-        <!-- Edit Form -->
-        <form id="editForm" style="margin-top: 30px;">
-          <h3 style="margin-bottom: 20px; color: #333;">✏️ Edit URL Destination</h3>
-
+      <!-- Create URL Tab -->
+      <div id="createTab" class="tab-content active">
+        <form id="shortenForm">
           <div class="form-group">
-            <label for="editLongUrl">Destination URL</label>
+            <label for="longUrl">🌐 Enter your long URL</label>
             <input
               type="url"
-              id="editLongUrl"
-              name="editLongUrl"
-              placeholder="https://example.com"
+              id="longUrl"
+              name="longUrl"
+              placeholder="https://example.com/very/long/url/that/needs/shortening"
               required
             >
-            <p class="help-text">You can only change the destination URL. The short code cannot be modified.</p>
           </div>
 
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="resetExpiration" name="resetExpiration" checked>
-              Reset expiration timer (extends by 30 days from now)
-            </label>
+          <div class="optional-fields">
+            <h4>⚙️ Optional Settings</h4>
+
+            <div class="form-group">
+              <label for="customCode">Custom Short Code</label>
+              <input
+                type="text"
+                id="customCode"
+                name="customCode"
+                placeholder="my-custom-link"
+                pattern="[a-zA-Z0-9_-]{3,30}"
+                minlength="3"
+                maxlength="30"
+              >
+              <p class="help-text">3-30 characters: letters, numbers, hyphens, and underscores only</p>
+            </div>
+
+            <div class="form-group">
+              <label for="expiresIn">⏰ Expire After (hours)</label>
+              <input
+                type="number"
+                id="expiresIn"
+                name="expiresIn"
+                placeholder="24"
+                min="1"
+                max="8760"
+              >
+              <p class="help-text">Link expires after specified hours (max 8760 = 1 year)</p>
+            </div>
           </div>
 
-          <button type="submit" class="btn" id="editSubmitBtn">Save Changes</button>
-          <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
-          <button type="button" class="btn btn-danger" onclick="deleteUrl()">Delete URL</button>
+          <button type="submit" class="btn" id="submitBtn">✨ Shorten URL</button>
         </form>
 
-        <div class="loading" id="editLoading" style="display: none;">
+        <div class="loading" id="loading">
           <div class="spinner"></div>
-          <p style="margin-top: 10px;">Updating URL...</p>
+          <p>Creating your short URL...</p>
         </div>
 
-        <div class="error" id="editError"></div>
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+          <h3>✅ Your shortened URL:</h3>
+          <div class="url-display">
+            <div class="short-url" id="shortUrl"></div>
+            <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">📋 Copy</button>
+          </div>
+          <p style="margin-top: 16px; color: var(--text-secondary); font-size: 13px;">
+            Original: <span id="originalUrl" style="word-break: break-all;"></span>
+          </p>
+          <div class="qr-code-section" id="qrSection" style="display: none;">
+            <h4>📱 QR Code</h4>
+            <img id="qrCodeImage" src="" alt="QR Code">
+            <br>
+            <button class="qr-btn" onclick="downloadQR()">💾 Download QR Code</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit URL Tab -->
+      <div id="editTab" class="tab-content">
+        <form id="lookupForm">
+          <div class="form-group">
+            <label for="lookupCode">🔍 Enter Short URL Code</label>
+            <input
+              type="text"
+              id="lookupCode"
+              name="lookupCode"
+              placeholder="my-custom-link"
+              pattern="[a-zA-Z0-9_-]+"
+              required
+            >
+            <p class="help-text">Enter the short code (not the full URL)</p>
+          </div>
+          <button type="submit" class="btn" id="lookupBtn">🔍 Lookup URL</button>
+        </form>
+
+        <div class="loading" id="lookupLoading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Loading URL details...</p>
+        </div>
+
+        <div class="error" id="lookupError"></div>
+
+        <!-- URL Details and Edit Form -->
+        <div id="urlDetailsSection" style="display: none;">
+          <div class="url-info-card">
+            <h3>📊 URL Details</h3>
+            <div class="info-row">
+              <span class="info-label">Short Code:</span>
+              <span class="info-value" id="detailUrlCode"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Short URL:</span>
+              <span class="info-value" id="detailShortUrl"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Destination:</span>
+              <span class="info-value" id="detailLongUrl"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Created:</span>
+              <span class="info-value" id="detailCreatedAt"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Total Clicks:</span>
+              <span class="info-value" id="detailClicks"></span>
+            </div>
+          </div>
+
+          <!-- Expiration Info -->
+          <div id="expirationDisplay"></div>
+
+          <!-- Edit Form -->
+          <form id="editForm" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 24px; color: var(--text-primary); font-size: 18px;">✏️ Edit URL Destination</h3>
+
+            <div class="form-group">
+              <label for="editLongUrl">🌐 Destination URL</label>
+              <input
+                type="url"
+                id="editLongUrl"
+                name="editLongUrl"
+                placeholder="https://example.com"
+                required
+              >
+              <p class="help-text">You can only change the destination URL. The short code cannot be modified.</p>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="resetExpiration" name="resetExpiration" checked>
+                Reset expiration timer (extends by 30 days from now)
+              </label>
+            </div>
+
+            <button type="submit" class="btn" id="editSubmitBtn">💾 Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="deleteUrl()">🗑️ Delete URL</button>
+          </form>
+
+          <div class="loading" id="editLoading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Updating URL...</p>
+          </div>
+
+          <div class="error" id="editError"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -577,7 +796,6 @@
       const customCode = document.getElementById('customCode').value.trim();
       const expiresIn = document.getElementById('expiresIn').value;
 
-      // Hide previous results/errors
       result.classList.remove('show');
       error.classList.remove('show');
       qrSection.style.display = 'none';
@@ -591,30 +809,22 @@
       try {
         const response = await fetch('/api/url/shorten', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-          // Display the shortened URL
           shortUrlDisplay.textContent = data.data.shortUrl;
           originalUrlDisplay.textContent = data.data.longUrl;
           currentUrlCode = data.data.urlCode;
           result.classList.add('show');
-          copyBtn.textContent = 'Copy';
+          copyBtn.textContent = '📋 Copy';
           copyBtn.classList.remove('copied');
-
-          // Load QR code
           loadQRCode(currentUrlCode);
         } else {
-          // Display error message
-          const errorMessage = data.errors
-            ? data.errors.join(', ')
-            : data.message || 'Failed to shorten URL';
+          const errorMessage = data.errors ? data.errors.join(', ') : data.message || 'Failed to shorten URL';
           error.textContent = '❌ ' + errorMessage;
           error.classList.add('show');
         }
@@ -632,7 +842,6 @@
       try {
         const response = await fetch(`/api/url/qrcode/${urlCode}`);
         const data = await response.json();
-
         if (response.ok && data.success) {
           qrCodeImage.src = data.data.qrCode;
           qrSection.style.display = 'block';
@@ -648,7 +857,7 @@
         copyBtn.textContent = '✓ Copied!';
         copyBtn.classList.add('copied');
         setTimeout(() => {
-          copyBtn.textContent = 'Copy';
+          copyBtn.textContent = '📋 Copy';
           copyBtn.classList.remove('copied');
         }, 2000);
       }).catch(err => {
@@ -666,7 +875,6 @@
       document.body.removeChild(link);
     }
 
-    // Tab switching
     function switchTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
       const tabContents = document.querySelectorAll('.tab-content');
@@ -683,7 +891,6 @@
       }
     }
 
-    // URL Lookup functionality
     const lookupForm = document.getElementById('lookupForm');
     const lookupBtn = document.getElementById('lookupBtn');
     const lookupLoading = document.getElementById('lookupLoading');
@@ -699,7 +906,6 @@
 
       const lookupCode = document.getElementById('lookupCode').value.trim();
 
-      // Hide previous results/errors
       urlDetailsSection.style.display = 'none';
       lookupError.classList.remove('show');
       lookupLoading.style.display = 'block';
@@ -710,7 +916,6 @@
         const data = await response.json();
 
         if (response.ok && data.success) {
-          // Display URL details
           displayUrlDetails(data.data);
           urlDetailsSection.style.display = 'block';
         } else {
@@ -729,26 +934,17 @@
 
     function displayUrlDetails(urlData) {
       currentEditUrlCode = urlData.urlCode;
-
-      // Display basic info
       document.getElementById('detailUrlCode').textContent = urlData.urlCode;
       document.getElementById('detailShortUrl').textContent = urlData.shortUrl;
       document.getElementById('detailLongUrl').textContent = urlData.longUrl;
       document.getElementById('detailCreatedAt').textContent = new Date(urlData.createdAt).toLocaleString();
       document.getElementById('detailClicks').textContent = urlData.totalClicks;
-
-      // Pre-fill edit form
       document.getElementById('editLongUrl').value = urlData.longUrl;
-
-      // Display expiration info
       displayExpirationInfo(urlData.expirationInfo);
     }
 
     function displayExpirationInfo(expirationInfo) {
-      // Clear previous countdown
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-      }
+      if (countdownInterval) clearInterval(countdownInterval);
 
       if (!expirationInfo) {
         expirationDisplay.innerHTML = `
@@ -772,7 +968,6 @@
         return;
       }
 
-      // Display countdown
       const expiresAt = new Date(expirationInfo.expiresAt);
       const cssClass = expirationInfo.remainingDays < 7 ? 'expiration-warning' : 'expiration-good';
 
@@ -784,7 +979,6 @@
         </div>
       `;
 
-      // Start countdown timer
       updateCountdown(expiresAt);
       countdownInterval = setInterval(() => updateCountdown(expiresAt), 1000);
     }
@@ -804,11 +998,9 @@
       const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
 
-      document.getElementById('countdownTimer').textContent =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      document.getElementById('countdownTimer').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
 
-    // Edit form submission
     const editForm = document.getElementById('editForm');
     const editSubmitBtn = document.getElementById('editSubmitBtn');
     const editLoading = document.getElementById('editLoading');
@@ -820,22 +1012,16 @@
       const editLongUrl = document.getElementById('editLongUrl').value.trim();
       const resetExpiration = document.getElementById('resetExpiration').checked;
 
-      // Hide previous errors
       editError.classList.remove('show');
       editLoading.style.display = 'block';
       editSubmitBtn.disabled = true;
 
-      const payload = {
-        longUrl: editLongUrl,
-        resetExpiration: resetExpiration
-      };
+      const payload = { longUrl: editLongUrl, resetExpiration };
 
       try {
         const response = await fetch(`/api/url/edit/${currentEditUrlCode}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
 
@@ -843,12 +1029,9 @@
 
         if (response.ok && data.success) {
           alert('✅ URL updated successfully!');
-          // Refresh the URL details
           displayUrlDetails(data.data);
         } else {
-          const errorMessage = data.errors
-            ? data.errors.join(', ')
-            : data.message || 'Failed to update URL';
+          const errorMessage = data.errors ? data.errors.join(', ') : data.message || 'Failed to update URL';
           editError.textContent = '❌ ' + errorMessage;
           editError.classList.add('show');
         }
@@ -862,7 +1045,6 @@
       }
     });
 
-    // Delete URL functionality
     async function deleteUrl() {
       if (!currentEditUrlCode) {
         alert('❌ No URL selected');
@@ -874,22 +1056,16 @@
         `This action cannot be undone. The short URL will no longer work and all analytics data will be lost.`
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       try {
         editLoading.style.display = 'block';
 
-        const response = await fetch(`/api/url/${currentEditUrlCode}`, {
-          method: 'DELETE',
-        });
-
+        const response = await fetch(`/api/url/${currentEditUrlCode}`, { method: 'DELETE' });
         const data = await response.json();
 
         if (response.ok && data.success) {
           alert('✅ URL deleted successfully!');
-          // Clear the form and hide details
           cancelEdit();
         } else {
           alert('❌ ' + (data.message || 'Failed to delete URL'));
@@ -905,9 +1081,7 @@
     function cancelEdit() {
       urlDetailsSection.style.display = 'none';
       document.getElementById('lookupCode').value = '';
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-      }
+      if (countdownInterval) clearInterval(countdownInterval);
     }
   </script>
 </body>

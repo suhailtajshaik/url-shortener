@@ -7,6 +7,46 @@ const { param, validationResult } = require("express-validator");
 const logger = require("../../utils/logger");
 const Url = require("../../db/models/Url");
 
+/**
+ * @swagger
+ * /{urlCode}:
+ *   get:
+ *     summary: Redirect to destination URL via intermediate page
+ *     description: Serves an intermediate redirect page that requests location permission from the user before redirecting to the destination URL. This allows tracking clicks with location analytics.
+ *     tags: [Redirects]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *           minLength: 1
+ *           maxLength: 50
+ *         description: The short URL code
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: Redirect page served successfully (HTML page)
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               description: HTML redirect page with location permission request
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         description: Short URL not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               message: Short URL not found
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     GET /:code
 // @desc      Show intermediate page with location permission request
 router.get(

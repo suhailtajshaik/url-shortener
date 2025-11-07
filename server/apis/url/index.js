@@ -10,6 +10,98 @@ const logger = require("../../utils/logger");
 const config = require("../../config.js");
 const Url = require("../../db/models/Url");
 
+/**
+ * @swagger
+ * /api/url/shorten:
+ *   post:
+ *     summary: Create a shortened URL
+ *     description: Creates a new shortened URL with optional custom code and expiration. Returns existing URL if the same long URL was already shortened (only for non-custom codes).
+ *     tags: [URL Shortening]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - longUrl
+ *             properties:
+ *               longUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: The long URL to shorten (must include http:// or https://)
+ *                 minLength: 1
+ *                 maxLength: 2048
+ *                 example: https://www.example.com/very/long/url/path/to/resource
+ *               customCode:
+ *                 type: string
+ *                 description: Optional custom short code (3-30 characters, alphanumeric, hyphens, and underscores only)
+ *                 minLength: 3
+ *                 maxLength: 30
+ *                 pattern: ^[a-zA-Z0-9_-]+$
+ *                 example: my-custom-code
+ *               expiresIn:
+ *                 type: integer
+ *                 description: Expiration time in hours (1-8760 hours, max 1 year)
+ *                 minimum: 1
+ *                 maximum: 8760
+ *                 example: 720
+ *     responses:
+ *       201:
+ *         description: URL shortened successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/URL'
+ *             example:
+ *               success: true
+ *               message: URL shortened successfully
+ *               data:
+ *                 id: 1
+ *                 urlCode: abc123
+ *                 longUrl: https://www.example.com/very/long/url
+ *                 shortUrl: http://localhost:3000/abc123
+ *                 clicks: 0
+ *                 isCustom: false
+ *                 date: "2024-01-01T12:00:00.000Z"
+ *                 lastClickedAt: null
+ *                 expiresAt: "2024-02-01T12:00:00.000Z"
+ *       200:
+ *         description: URL already exists (returned existing URL)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/URL'
+ *             example:
+ *               success: true
+ *               message: URL already shortened
+ *               data:
+ *                 id: 1
+ *                 urlCode: abc123
+ *                 longUrl: https://www.example.com/very/long/url
+ *                 shortUrl: http://localhost:3000/abc123
+ *                 clicks: 5
+ *                 isCustom: false
+ *                 date: "2024-01-01T12:00:00.000Z"
+ *                 lastClickedAt: "2024-01-15T14:30:00.000Z"
+ *                 expiresAt: null
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     POST /api/url/shorten
 // @desc      Create short URL with validation and rate limiting
 router.post(
@@ -113,7 +205,7 @@ router.post(
       }
 
       // Create new URL document
-      const url = new Url({
+      const url = await Url.create({
         longUrl,
         shortUrl,
         urlCode,
@@ -121,8 +213,6 @@ router.post(
         expiresAt,
         date: new Date(),
       });
-
-      await url.save();
 
       logger.info(
         `URL shortened: ${longUrl} -> ${shortUrl}${isCustom ? " (custom)" : ""}${expiresAt ? ` (expires: ${expiresAt.toISOString()})` : ""}`
@@ -136,16 +226,9 @@ router.post(
     } catch (err) {
       logger.error("Error in /shorten:", err);
 
-      // Handle specific mongoose errors
-      if (err.name === "ValidationError") {
-        return res.status(400).json({
-          success: false,
-          message: "Validation error",
-          errors: Object.values(err.errors).map((e) => e.message),
-        });
-      }
-
-      if (err.code === 11000) {
+      // Handle specific Supabase/PostgreSQL errors
+      if (err.code === "23505") {
+        // Unique constraint violation
         return res.status(409).json({
           success: false,
           message: "URL code already exists, please try again",
@@ -160,6 +243,74 @@ router.post(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/stats/{urlCode}:
+ *   get:
+ *     summary: Get URL analytics and statistics
+ *     description: Retrieves detailed analytics for a shortened URL including total clicks, location statistics, and recent click details (last 10 clicks from 100 stored).
+ *     tags: [Analytics]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: Analytics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         urlCode:
+ *                           type: string
+ *                           example: abc123
+ *                         longUrl:
+ *                           type: string
+ *                           example: https://www.example.com
+ *                         shortUrl:
+ *                           type: string
+ *                           example: http://localhost:3000/abc123
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                         totalClicks:
+ *                           type: integer
+ *                           example: 42
+ *                         lastClickedAt:
+ *                           type: string
+ *                           format: date-time
+ *                           nullable: true
+ *                         clicksWithLocation:
+ *                           type: integer
+ *                           description: Number of clicks with location data
+ *                           example: 25
+ *                         locationPermissionRate:
+ *                           type: string
+ *                           description: Percentage of clicks with location permission granted
+ *                           example: "59.52%"
+ *                         recentClicks:
+ *                           type: array
+ *                           description: Last 10 click details
+ *                           items:
+ *                             $ref: '#/components/schemas/ClickDetail'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     GET /api/url/stats/:urlCode
 // @desc      Get analytics for a shortened URL
 router.get(
@@ -192,13 +343,16 @@ router.get(
         });
       }
 
+      // Get click details
+      const clickDetails = await Url.getClickDetails(urlCode, 100);
+
       // Calculate location statistics
-      const clicksWithLocation = url.clickDetails.filter(
+      const clicksWithLocation = clickDetails.filter(
         (click) => click.location && click.location.permissionGranted
       );
       const locationPermissionRate =
-        url.clickDetails.length > 0
-          ? (clicksWithLocation.length / url.clickDetails.length) * 100
+        clickDetails.length > 0
+          ? (clicksWithLocation.length / clickDetails.length) * 100
           : 0;
 
       // Return analytics data
@@ -213,7 +367,7 @@ router.get(
           lastClickedAt: url.lastClickedAt,
           clicksWithLocation: clicksWithLocation.length,
           locationPermissionRate: locationPermissionRate.toFixed(2) + "%",
-          recentClicks: url.clickDetails.slice(-10), // Last 10 clicks with location
+          recentClicks: clickDetails.slice(0, 10), // Last 10 clicks
         },
       });
     } catch (err) {
@@ -226,6 +380,66 @@ router.get(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/details/{urlCode}:
+ *   get:
+ *     summary: Get detailed URL information
+ *     description: Retrieves detailed information about a shortened URL including expiration status, remaining time, and basic statistics.
+ *     tags: [URL Management]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: URL details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         urlCode:
+ *                           type: string
+ *                           example: abc123
+ *                         longUrl:
+ *                           type: string
+ *                           example: https://www.example.com
+ *                         shortUrl:
+ *                           type: string
+ *                           example: http://localhost:3000/abc123
+ *                         isCustom:
+ *                           type: boolean
+ *                           example: false
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                         expirationInfo:
+ *                           $ref: '#/components/schemas/ExpirationInfo'
+ *                         totalClicks:
+ *                           type: integer
+ *                           example: 42
+ *                         lastClickedAt:
+ *                           type: string
+ *                           format: date-time
+ *                           nullable: true
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     GET /api/url/details/:urlCode
 // @desc      Get detailed URL information including expiration
 router.get(
@@ -302,6 +516,75 @@ router.get(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/edit/{urlCode}:
+ *   put:
+ *     summary: Edit a shortened URL destination
+ *     description: Updates the destination (long URL) of an existing shortened URL. The short code/alias cannot be changed. Optionally resets the expiration timer to the default period (720 hours).
+ *     tags: [URL Management]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code to edit
+ *         example: abc123
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - longUrl
+ *             properties:
+ *               longUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: New destination URL (must include http:// or https://)
+ *                 maxLength: 2048
+ *                 example: https://www.newdestination.com/page
+ *               resetExpiration:
+ *                 type: boolean
+ *                 description: Whether to reset the expiration timer (defaults to true)
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: URL updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/URL'
+ *             example:
+ *               success: true
+ *               message: URL updated successfully
+ *               data:
+ *                 id: 1
+ *                 urlCode: abc123
+ *                 longUrl: https://www.newdestination.com/page
+ *                 shortUrl: http://localhost:3000/abc123
+ *                 clicks: 42
+ *                 isCustom: false
+ *                 date: "2024-01-01T12:00:00.000Z"
+ *                 lastClickedAt: "2024-01-15T14:30:00.000Z"
+ *                 expiresAt: "2024-02-15T10:00:00.000Z"
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         $ref: '#/components/responses/Gone'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     PUT /api/url/edit/:urlCode
 // @desc      Edit destination URL of an existing shortened URL (alias cannot be changed)
 router.put(
@@ -368,8 +651,8 @@ router.put(
         });
       }
 
-      // Update destination URL
-      url.longUrl = longUrl;
+      // Prepare updates
+      const updates = { longUrl };
 
       // Reset expiration timer if requested or if default expiration should apply
       if (resetExpiration === true || resetExpiration === undefined) {
@@ -377,18 +660,19 @@ router.put(
         expirationDate.setHours(
           expirationDate.getHours() + config.defaultExpirationHours
         );
-        url.expiresAt = expirationDate;
+        updates.expiresAt = expirationDate;
       }
 
-      await url.save();
+      // Update the URL
+      const updatedUrl = await Url.update(urlCode, updates);
 
       logger.info(
-        `URL edited: ${urlCode} (longUrl: ${url.longUrl}, expires: ${url.expiresAt ? url.expiresAt.toISOString() : "never"})`
+        `URL edited: ${urlCode} (longUrl: ${updatedUrl.longUrl}, expires: ${updatedUrl.expiresAt ? new Date(updatedUrl.expiresAt).toISOString() : "never"})`
       );
 
       res.json({
         success: true,
-        data: url,
+        data: updatedUrl,
         message: "URL updated successfully",
       });
     } catch (err) {
@@ -402,6 +686,54 @@ router.put(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/{urlCode}:
+ *   delete:
+ *     summary: Delete a shortened URL
+ *     description: Permanently deletes a shortened URL and all associated click tracking data. This action cannot be undone.
+ *     tags: [URL Management]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code to delete
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: URL deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         urlCode:
+ *                           type: string
+ *                           example: abc123
+ *                         longUrl:
+ *                           type: string
+ *                           example: https://www.example.com
+ *             example:
+ *               success: true
+ *               message: URL deleted successfully
+ *               data:
+ *                 urlCode: abc123
+ *                 longUrl: https://www.example.com
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     DELETE /api/url/:urlCode
 // @desc      Delete a shortened URL
 router.delete(
@@ -427,7 +759,7 @@ router.delete(
       const { urlCode } = req.params;
 
       // Find and delete the URL
-      const url = await Url.findOneAndDelete({ urlCode });
+      const url = await Url.delete(urlCode);
 
       if (!url) {
         return res.status(404).json({
@@ -456,6 +788,53 @@ router.delete(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/info/{urlCode}:
+ *   get:
+ *     summary: Get URL information without tracking
+ *     description: Retrieves basic URL information without recording a click. Used by the redirect page to fetch destination URL before tracking the click with location data.
+ *     tags: [Redirects]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: URL information retrieved successfully (not expired)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         urlCode:
+ *                           type: string
+ *                           example: abc123
+ *                         longUrl:
+ *                           type: string
+ *                           example: https://www.example.com
+ *                         shortUrl:
+ *                           type: string
+ *                           example: http://localhost:3000/abc123
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         $ref: '#/components/responses/Gone'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     GET /api/url/info/:urlCode
 // @desc      Get URL info without recording a click (for redirect page)
 router.get(
@@ -516,6 +895,51 @@ router.get(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/track-redirect:
+ *   post:
+ *     summary: Track URL click with analytics
+ *     description: Records a click event with optional location data and analytics information. This endpoint is called after the user grants or denies location permission on the redirect page. Automatically updates click count and last clicked timestamp.
+ *     tags: [Redirects]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - urlCode
+ *             properties:
+ *               urlCode:
+ *                 type: string
+ *                 pattern: ^[a-zA-Z0-9_-]+$
+ *                 description: The short URL code being accessed
+ *                 example: abc123
+ *               location:
+ *                 $ref: '#/components/schemas/Location'
+ *     responses:
+ *       200:
+ *         description: Click tracked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Click tracked successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         $ref: '#/components/responses/Gone'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     POST /api/url/track-redirect
 // @desc      Record click with location data and analytics
 router.post(
@@ -583,7 +1007,7 @@ router.post(
       }
 
       // Record click with location data
-      await url.recordClick(clickData);
+      await Url.recordClick(urlCode, clickData);
 
       logger.info(
         `Click tracked: ${urlCode} -> ${url.longUrl} ${
@@ -607,6 +1031,57 @@ router.post(
   }
 );
 
+/**
+ * @swagger
+ * /api/url/qrcode/{urlCode}:
+ *   get:
+ *     summary: Generate QR code for shortened URL
+ *     description: Generates a QR code image (as base64 data URL) for a shortened URL. The QR code is PNG format with medium error correction level, 300x300 pixels.
+ *     tags: [QR Codes]
+ *     parameters:
+ *       - in: path
+ *         name: urlCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[a-zA-Z0-9_-]+$
+ *         description: The short URL code
+ *         example: abc123
+ *     responses:
+ *       200:
+ *         description: QR code generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         urlCode:
+ *                           type: string
+ *                           example: abc123
+ *                         shortUrl:
+ *                           type: string
+ *                           example: http://localhost:3000/abc123
+ *                         longUrl:
+ *                           type: string
+ *                           example: https://www.example.com
+ *                         qrCode:
+ *                           type: string
+ *                           description: Base64-encoded PNG image data URL
+ *                           example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         $ref: '#/components/responses/Gone'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // @route     GET /api/url/qrcode/:urlCode
 // @desc      Generate QR code for a shortened URL
 router.get(
