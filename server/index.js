@@ -88,18 +88,25 @@ if (initSupabase) {
   }
 }
 
-app.use(express.static(path.join("..", "client")));
-
 // Export shortenLimiter for use in routes
 app.set("shortenLimiter", shortenLimiter);
 
 // Swagger API documentation (if available)
 if (swaggerUi && swaggerSpec) {
+  // Root path redirects to Swagger UI
+  app.get("/", (req, res) => {
+    res.redirect("/api-docs");
+  });
+
   app.use(
     "/api-docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpec, {
-      customCss: ".swagger-ui .topbar { display: none }",
+      customCss: `
+        .swagger-ui .topbar { display: none }
+        .swagger-ui .info { margin: 50px 0; }
+        .swagger-ui .info .title { font-size: 36px; }
+      `,
       customSiteTitle: "URL Shortener API Documentation",
       customfavIcon: "https://swagger.io/favicon.ico",
     })
@@ -112,8 +119,15 @@ if (swaggerUi && swaggerSpec) {
   });
 
   logger.info(`Swagger documentation available at ${config.baseUrl}/api-docs`);
+  logger.info(`Root path (/) redirects to Swagger UI`);
 } else {
   logger.warn("Swagger documentation not available - module failed to load");
+  app.get("/", (req, res) => {
+    res.status(503).json({
+      error: "API documentation temporarily unavailable",
+      message: "Swagger modules failed to load"
+    });
+  });
   app.get("/api-docs", (req, res) => {
     res.status(503).json({
       error: "API documentation temporarily unavailable",
