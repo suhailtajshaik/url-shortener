@@ -45,8 +45,13 @@ try {
   };
 }
 
-// Security middleware
-app.use(helmet());
+// Security middleware - Configure Helmet to allow Swagger UI assets
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable CSP for Swagger UI to work
+    crossOriginEmbedderPolicy: false,
+  })
+);
 app.use(cors());
 
 // HTTP request logging
@@ -93,29 +98,34 @@ app.set("shortenLimiter", shortenLimiter);
 
 // Swagger API documentation (if available)
 if (swaggerUi && swaggerSpec) {
-  // Root path redirects to Swagger UI
-  app.get("/", (req, res) => {
-    res.redirect("/api-docs");
-  });
-
-  app.use(
-    "/api-docs",
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec, {
-      customCss: `
-        .swagger-ui .topbar { display: none }
-        .swagger-ui .info { margin: 50px 0; }
-        .swagger-ui .info .title { font-size: 36px; }
-      `,
-      customSiteTitle: "URL Shortener API Documentation",
-      customfavIcon: "https://swagger.io/favicon.ico",
-    })
-  );
-
-  // Swagger JSON endpoint
+  // Swagger JSON endpoint (must come before swagger UI)
   app.get("/api-docs.json", (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.send(swaggerSpec);
+  });
+
+  // Swagger UI setup with serverless-friendly options
+  const swaggerOptions = {
+    explorer: true,
+    customCss: `
+      .swagger-ui .topbar { display: none }
+      .swagger-ui .info { margin: 50px 0; }
+      .swagger-ui .info .title { font-size: 36px; }
+    `,
+    customSiteTitle: "URL Shortener API Documentation",
+    swaggerOptions: {
+      url: "/api-docs.json", // Load spec from JSON endpoint
+      persistAuthorization: true,
+    },
+  };
+
+  // Serve Swagger UI
+  app.get("/api-docs", swaggerUi.setup(swaggerSpec, swaggerOptions));
+  app.use("/api-docs", swaggerUi.serve);
+
+  // Root path redirects to Swagger UI
+  app.get("/", (req, res) => {
+    res.redirect(301, "/api-docs");
   });
 
   logger.info(`Swagger documentation available at ${config.baseUrl}/api-docs`);
@@ -125,7 +135,8 @@ if (swaggerUi && swaggerSpec) {
   app.get("/", (req, res) => {
     res.status(503).json({
       error: "API documentation temporarily unavailable",
-      message: "Swagger modules failed to load"
+      message: "Swagger modules failed to load",
+      suggestion: "Check server logs for module loading errors"
     });
   });
   app.get("/api-docs", (req, res) => {

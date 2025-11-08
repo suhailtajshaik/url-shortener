@@ -1,11 +1,31 @@
 {
-  "buildCommand": null,
-  "outputDirectory": null,
-  "framework": null,
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/api"
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 10
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/api-docs.json",
+      "dest": "/api/index.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/api-docs",
+      "dest": "/api/index.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
