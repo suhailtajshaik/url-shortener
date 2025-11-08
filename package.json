@@ -6,8 +6,6 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "build": "echo 'No build step required for Node.js app'",
-    "vercel-build": "echo 'Installing dependencies...' && npm install",
     "docker:build": "docker build -t url-shortener .",
     "docker:run": "docker run --name url-shortener -d -p 3000:3000 url-shortener",
     "lint": "eslint . --ext .js",
