@@ -59,11 +59,6 @@ const routting = (app) => {
     };
     res.json(data);
   });
-
-  // All other routes should redirect to the index.html
-  app.route("/*").get(function (req, res) {
-    res.sendFile(path.resolve(__dirname, "..", "client" + "/index.html"));
-  });
 };
 
 module.exports = routting;

@@ -11,8 +11,8 @@ const Url = require("../../db/models/Url");
  * @swagger
  * /{urlCode}:
  *   get:
- *     summary: Redirect to destination URL via intermediate page
- *     description: Serves an intermediate redirect page that requests location permission from the user before redirecting to the destination URL. This allows tracking clicks with location analytics.
+ *     summary: Redirect to destination URL (Direct API Redirect)
+ *     description: Redirects directly to the original URL and tracks the click asynchronously. This is the core URL shortening redirect functionality.
  *     tags: [Redirects]
  *     parameters:
  *       - in: path
@@ -26,13 +26,14 @@ const Url = require("../../db/models/Url");
  *         description: The short URL code
  *         example: abc123
  *     responses:
- *       200:
- *         description: Redirect page served successfully (HTML page)
- *         content:
- *           text/html:
+ *       302:
+ *         description: Redirect to destination URL
+ *         headers:
+ *           Location:
  *             schema:
  *               type: string
- *               description: HTML redirect page with location permission request
+ *             description: The destination URL
+ *             example: https://example.com
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       404:
@@ -44,11 +45,27 @@ const Url = require("../../db/models/Url");
  *             example:
  *               success: false
  *               message: Short URL not found
+ *       410:
+ *         description: Short URL has expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: This short URL has expired
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
 // @route     GET /:code
-// @desc      Show intermediate page with location permission request
+// @desc      Direct redirect to destination URL with click tracking
 router.get(
   "/:urlCode",
   [
@@ -75,7 +92,7 @@ router.get(
     try {
       const { urlCode } = req.params;
 
-      // Verify URL exists
+      // Find URL in database
       const url = await Url.findOne({ urlCode });
 
       if (!url) {
@@ -85,12 +102,31 @@ router.get(
         });
       }
 
-      // Serve the redirect page with location permission request
-      return res.sendFile(
-        path.resolve(__dirname, "..", "..", "..", "client", "redirect.html")
-      );
+      // Check if URL has expired
+      if (url.expiresAt && new Date(url.expiresAt) < new Date()) {
+        return res.status(410).json({
+          success: false,
+          message: "This short URL has expired",
+          expiresAt: url.expiresAt,
+        });
+      }
+
+      // Track the click asynchronously (don't wait for it)
+      const clickData = {
+        userAgent: req.get("user-agent") || "Unknown",
+        referer: req.get("referer") || null,
+        ip: req.ip || req.connection.remoteAddress || null,
+      };
+
+      // Record click in background
+      Url.recordClick(urlCode, clickData).catch((err) => {
+        logger.error("Error recording click:", err);
+      });
+
+      // Redirect immediately
+      return res.redirect(302, url.longUrl);
     } catch (err) {
-      logger.error("Error serving redirect page:", err);
+      logger.error("Error processing redirect:", err);
 
       res.status(500).json({
         success: false,
